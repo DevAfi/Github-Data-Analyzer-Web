@@ -1,6 +1,6 @@
-from .github_api import GitHubAPI
-from .models import RepoOverview, Contributor, CommitStats, HealthScore
-from .cache import SimpleCache
+from services.github_api import GitHubAPI
+from services.models import RepoOverview, Contributor, CommitStats, HealthScore
+from services.cache import SimpleCache
 from typing import List, Dict, Tuple
 from datetime import datetime, timezone
 

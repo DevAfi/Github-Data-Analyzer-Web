@@ -1,7 +1,7 @@
 import requests
 from typing import Optional, Dict, Any, List
-from .config import GITHUB_TOKEN, GITHUB_API_BASE
-from .cache import SimpleCache
+from services.config import GITHUB_TOKEN, GITHUB_API_BASE
+from services.cache import SimpleCache
 
 class GitHubAPI:
     def __init__(self, token: Optional[str] = None, use_cache: bool = True):

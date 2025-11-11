@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { Container, Alert, CircularProgress, Box, CssBaseline, ThemeProvider, createTheme } from '@mui/material';
-import RepoInput from './components/RepoInput';
+import { Container, Alert, CssBaseline, ThemeProvider, createTheme } from '@mui/material';
 import Results from './pages/Results';
 import { analyzeRepo } from './services/api';
+import LoadingSkeleton from './components/LoadingSkeleton';
+import Hero from './components/Hero';
 
 const darkTheme = createTheme({
   palette: {
@@ -33,14 +34,9 @@ function App() {
   return (
     <ThemeProvider theme={darkTheme}>
       <CssBaseline />
+      <Hero onAnalyze={handleAnalyze} loading={loading} />
       <Container maxWidth="lg" sx={{ py: 4 }}>
-        <RepoInput onAnalyze={handleAnalyze} loading={loading} />
-        
-        {loading && (
-          <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
-            <CircularProgress />
-          </Box>
-        )}
+        {loading && <LoadingSkeleton />}
         
         {error && (
           <Alert severity="error" sx={{ mb: 3 }}>

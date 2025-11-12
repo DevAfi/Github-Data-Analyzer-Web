@@ -22,12 +22,9 @@ class GitHubAnalyzer:
         )
 
 
-    def _process_commits(self, commits: List[Dict]) -> CommitStats:
+    def _process_commits(self, commits: List[Dict], total_commits: int) -> CommitStats:
         """Process commit data into statistics."""
         from collections import Counter
-        
-         # Note: This is limited to what we fetched
-        total_commits = len(commits) 
         
         # Parse all commit dates
         commit_dates = []
@@ -60,7 +57,18 @@ class GitHubAnalyzer:
 
 
     def _process_contributors(self, contributors: List[Dict]) -> List[Contributor]:
-        total_contributions = sum(contributor['contributions'] for contributor in contributors)
+        if not contributors:
+            return []
+
+        total_contributions = sum(
+            int(contributor.get('contributions', 0)) 
+            for contributor in contributors
+        )
+
+        if total_contributions == 0:
+            return []
+
+
         return [Contributor(
             login=contributor['login'],
             contributions=contributor['contributions'],
@@ -69,8 +77,8 @@ class GitHubAnalyzer:
 
 
     def _process_languages(self, languages: Dict) -> Dict:
-        if not languages:
-            return {}
+        if not languages or not isinstance(languages, dict):
+            return 
         
         total_lines = sum(languages.values())
         return {
@@ -148,6 +156,7 @@ class GitHubAnalyzer:
     def analyze_repository(self, owner: str, repo: str) -> Dict:
         """Main method - analyzes a repository and returns all insights."""
         print(f"🔍 Analyzing {owner}/{repo}...")
+
         
         # Fetch all data
         repo_data = self.api.get_repo(owner, repo)
@@ -155,9 +164,14 @@ class GitHubAnalyzer:
         contributors = self.api.get_contributors(owner, repo)
         languages = self.api.get_languages(owner, repo)
         
+        
+        
+        actual_total_commits = sum(c['contributions'] for c in contributors) if contributors else len(commits)
+
         # Process data
         overview = self._process_repo_overview(repo_data)
-        commit_stats = self._process_commits(commits)
+        commit_stats = self._process_commits(commits, actual_total_commits)
+
         top_contributors = self._process_contributors(contributors)
         language_breakdown = self._process_languages(languages)
         health = self._calculate_health_score(repo_data, commits, contributors)

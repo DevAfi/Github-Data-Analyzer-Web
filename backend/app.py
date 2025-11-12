@@ -25,6 +25,7 @@ def analyze():
 
         results = analyzer.analyze_repository(owner, repo)
 
+        print(f"Successfully analyzed {owner}/{repo}")
         print("Type of languages:", type(results['languages']))
         print("Languages data:", results['languages'])
 
@@ -34,11 +35,11 @@ def analyze():
                 'name': results['overview'].name,
                 'full_name': results['overview'].full_name,
                 'description': results['overview'].description,
-                'stars': results['overview'].stars,
-                'forks': results['overview'].forks,
+                'stars': int(results['overview'].stars),
+                'forks': int(results['overview'].forks),
                 'created_at': results['overview'].created_at.isoformat(),
                 'updated_at': results['overview'].updated_at.isoformat(),
-                'language': results['overview'].language
+                'language': results['overview'].language or 'unknown'
             },
             'commit_stats': {
                 'total_commits': results['commit_stats'].total_commits,
@@ -65,8 +66,19 @@ def analyze():
         }
         
         return jsonify(response), 200
+
+    except KeyError as e:
+        print(f"KeyError: {e}")
+        return jsonify({"error": f"Missing data field: {str(e)}"}), 500
+    except TypeError as e:
+        print(f"TypeError: {e}")
+        return jsonify({"error": f"Data type error: {str(e)}"}), 500
     except Exception as e:
+        print(f"Unexpected error: {e}")
+        import traceback
+        traceback.print_exc()
         return jsonify({"error": str(e)}), 400
+
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

@@ -25,6 +25,10 @@ def analyze():
 
         results = analyzer.analyze_repository(owner, repo)
 
+        print("Type of languages:", type(results['languages']))
+        print("Languages data:", results['languages'])
+
+
         response = {
             'overview': {
                 'name': results['overview'].name,

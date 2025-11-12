@@ -3,6 +3,8 @@ import { Container, Alert, CssBaseline, ThemeProvider, createTheme } from '@mui/
 import { useSearchParams } from 'react-router-dom';
 import Results from './pages/Results';
 import { analyzeRepo } from './services/api';
+import { saveRecentSearch } from './utils/storage';
+import RecentSearches from './components/RecentSearches';
 import LoadingSkeleton from './components/LoadingSkeleton';
 import Hero from './components/Hero';
 
@@ -19,6 +21,7 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [searchParams, setSearchParams] = useSearchParams()
+
   useEffect(() => {
     const owner = searchParams.get('owner');
     const repo = searchParams.get('repo');
@@ -27,6 +30,7 @@ function App() {
       handleAnalyze(owner, repo);
     }
   }, []);
+
   const handleAnalyze = async (owner, repo) => {
     setLoading(true);
     setError(null);
@@ -36,11 +40,13 @@ function App() {
     try {
       const results = await analyzeRepo(owner, repo);
       setData(results);
+      saveRecentSearch(owner, repo);
     } catch (err) {
-      setError(err.response?.data?.error || err.message || 'Failed to analyze repository');
+      setError(err.response?.data?.error || err.message);
     } finally {
       setLoading(false);
     }
+
   };
 
   return (
@@ -48,13 +54,15 @@ function App() {
       <CssBaseline />
       <Hero onAnalyze={handleAnalyze} loading={loading} />
       <Container maxWidth="lg" sx={{ py: 4 }}>
-        {loading && <LoadingSkeleton />}
-        
-        {error && (
-          <Alert severity="error" sx={{ mb: 3 }}>
-            {error}
-          </Alert>
-        )}
+
+      {!loading && !data && !error && (
+        <RecentSearches onSelect={handleAnalyze} />
+      )}
+
+      {loading && <LoadingSkeleton />}
+      
+      {error && <Alert severity="error">{error}</Alert>}
+
         
         {data && <Results data={data} />}
       </Container>

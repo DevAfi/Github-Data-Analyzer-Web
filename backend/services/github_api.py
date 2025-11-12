@@ -65,15 +65,27 @@ class GitHubAPI:
     def get_commits(self, owner: str, repo: str, per_page: int = 100, page: int = 1) -> List[Dict[str, Any]]:
         """Get commits on a repo"""
         params = {"per_page": per_page, "page": page}
-        return self._make_request(f"/repos/{owner}/{repo}/commits", params=params)
+        data = self._make_request(f"/repos/{owner}/{repo}/commits", params=params)
+        if not isinstance(data, list):
+            print(f"Warning: get_commits returned {type(data).__name__}, expected list")
+            return []
+        return data
     
     def get_contributors(self, owner: str, repo: str) -> List[Dict[str, Any]]:
         """Get contributors to a repo"""
-        return self._make_request(f"/repos/{owner}/{repo}/contributors")
+        data = self._make_request(f"/repos/{owner}/{repo}/contributors")
+        if not isinstance(data, list):
+            print(f"Warning: get_contributors returned {type(data).__name__}, expected list")
+            return []
+        return data
 
     def get_languages(self, owner: str, repo: str) -> Dict[str, int]:
         """Get languages used in a repo"""
-        return self._make_request(f"/repos/{owner}/{repo}/languages")
+        data = self._make_request(f"/repos/{owner}/{repo}/languages")
+        if not isinstance(data, dict):
+            print(f"Warning: get_languages returned {type(data).__name__}, expected dict")
+            return {}
+        return data
 
     def get_rate_limit(self) -> Dict[str, Any]:
         return self._make_request("/rate_limit")

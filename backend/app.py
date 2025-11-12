@@ -55,7 +55,7 @@ def analyze():
                 }
                 for c in results['contributors']
             ],
-            'languages': results['languages'],
+            'languages': results.get('languages') or {},
             'health': {
                 'activity_score': results['health'].activity_score,
                 'contributor_score': results['health'].contributor_score,

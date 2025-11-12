@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Container, Alert, CssBaseline, ThemeProvider, createTheme, Box, Link, Typography, Stack } from '@mui/material';
+import { Container, Alert, CssBaseline, ThemeProvider, createTheme, Box, Link, Typography, Stack, Fade } from '@mui/material';
 import GitHubIcon from "@mui/icons-material/GitHub";
 import EmailIcon from '@mui/icons-material/Email';
 import LinkedInIcon from '@mui/icons-material/LinkedIn';
@@ -26,13 +26,19 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [searchParams, setSearchParams] = useSearchParams()
+  const [owner, setOwner] = useState('');
+  const [repo, setRepo] = useState('');
 
   useEffect(() => {
-    const owner = searchParams.get('owner');
-    const repo = searchParams.get('repo');
+    const ownerParam = searchParams.get('owner');
+    const repoParam = searchParams.get('repo');
     
-    if (owner && repo && !data && !loading) {
-      handleAnalyze(owner, repo);
+    if (ownerParam && repoParam) {
+      setOwner(ownerParam);
+      setRepo(repoParam);
+      if (!data && !loading) {
+        handleAnalyze(ownerParam, repoParam);
+      }
     }
   }, []);
 
@@ -59,25 +65,54 @@ function App() {
       <Box sx={{
         minHeight: '100vh',
         background: 'linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)',
-        py: 4,
       }}
       >
 
 
         <CssBaseline />
-        <Hero onAnalyze={handleAnalyze} loading={loading} />
+        <Hero 
+          onAnalyze={handleAnalyze} 
+          loading={loading}
+          owner={owner}
+          repo={repo}
+          onOwnerChange={setOwner}
+          onRepoChange={setRepo}
+        />
         <Container maxWidth="lg" sx={{ py: 4 }}>
 
-        {!loading && !data && !error && (
-          <RecentSearches onSelect={handleAnalyze} />
-        )}
+          {!loading && !data && !error && (
+            <Fade in={true} timeout={800}>
+              <div>
+                <RecentSearches 
+                  onSelect={(owner, repo) => {
+                    setOwner(owner);
+                    setRepo(repo);
+                  }} 
+                />
+              </div>
+            </Fade>
+            
+          )}
 
-        {loading && <LoadingSkeleton />}
+          {loading && (
+              <Fade in={loading} timeout={300} unmountOnExit>
+                <div>
+                  <LoadingSkeleton />
+                </div>
+              </Fade>
+            )
+          }
 
-        {error && <Alert severity="error">{error}</Alert>}
+          {error && <Alert severity="error">{error}</Alert>}
 
           
-          {data && <Results data={data} />}
+          {data && (
+            <Fade in={true} timeout={800}>
+              <div>
+                <Results data={data} />
+              </div>
+            </Fade>
+          )}
         </Container>
 
         {/* Ive addeed this basic footer, WILL CHANGE LATER TO FULL ONE */}

@@ -10,15 +10,18 @@ class GitHubAnalyzer:
     
 
     def _process_repo_overview(self, repo_data: Dict) -> RepoOverview:
+        if not isinstance(repo_data, dict):
+            raise TypeError(f"Expected dict for repo_data, got {type(repo_data).__name__}")
+        
         return RepoOverview(
-            name=repo_data['name'],
-            full_name=repo_data['full_name'],
-            description=repo_data['description'] or 'No description available',
-            stars=repo_data['stargazers_count'],
-            forks=repo_data['forks_count'],
-            created_at=datetime.fromisoformat(repo_data['created_at'].replace('Z', '+00:00')),
-            updated_at=datetime.fromisoformat(repo_data['updated_at'].replace('Z', '+00:00')),
-            language=repo_data['language'] or 'Unknown'
+            name=repo_data.get('name', 'Unknown'),
+            full_name=repo_data.get('full_name', 'Unknown/Unknown'),
+            description=repo_data.get('description') or 'No description available',
+            stars=repo_data.get('stargazers_count', 0),
+            forks=repo_data.get('forks_count', 0),
+            created_at=datetime.fromisoformat(repo_data.get('created_at', '').replace('Z', '+00:00')),
+            updated_at=datetime.fromisoformat(repo_data.get('updated_at', '').replace('Z', '+00:00')),
+            language=repo_data.get('language') or 'Unknown'
         )
 
 
@@ -26,12 +29,28 @@ class GitHubAnalyzer:
         """Process commit data into statistics."""
         from collections import Counter
         
+        if not isinstance(commits, list):
+            commits = []
+        
         # Parse all commit dates
         commit_dates = []
         for commit in commits:
-            date_str = commit['commit']['author']['date']
-            commit_date = datetime.fromisoformat(date_str.replace('Z', '+00:00'))
-            commit_dates.append(commit_date)
+            if not isinstance(commit, dict):
+                continue
+            try:
+                commit_info = commit.get('commit', {})
+                if not isinstance(commit_info, dict):
+                    continue
+                author_info = commit_info.get('author', {})
+                if not isinstance(author_info, dict):
+                    continue
+                date_str = author_info.get('date')
+                if date_str:
+                    commit_date = datetime.fromisoformat(date_str.replace('Z', '+00:00'))
+                    commit_dates.append(commit_date)
+            except (KeyError, ValueError, AttributeError) as e:
+                print(f"Warning: Skipping invalid commit data: {e}")
+                continue
         
         # Calculate commits per day (rough estimate based on fetched commits)
         if commit_dates:
@@ -57,34 +76,54 @@ class GitHubAnalyzer:
 
 
     def _process_contributors(self, contributors: List[Dict]) -> List[Contributor]:
-        if not contributors:
+        if not contributors or not isinstance(contributors, list):
             return []
 
-        total_contributions = sum(
-            int(contributor.get('contributions', 0)) 
-            for contributor in contributors
-        )
+        total_contributions = 0
+        valid_contributors = []
+        for contributor in contributors:
+            if not isinstance(contributor, dict):
+                continue
+            try:
+                contributions = int(contributor.get('contributions', 0))
+                login = contributor.get('login', 'Unknown')
+                if login and contributions >= 0:
+                    total_contributions += contributions
+                    valid_contributors.append({
+                        'login': login,
+                        'contributions': contributions
+                    })
+            except (ValueError, TypeError) as e:
+                print(f"Warning: Skipping invalid contributor data: {e}")
+                continue
 
         if total_contributions == 0:
             return []
 
-
         return [Contributor(
-            login=contributor['login'],
-            contributions=contributor['contributions'],
-            percentage=contributor['contributions'] / total_contributions * 100
-        ) for contributor in contributors]
+            login=c['login'],
+            contributions=c['contributions'],
+            percentage=c['contributions'] / total_contributions * 100
+        ) for c in valid_contributors]
 
 
     def _process_languages(self, languages: Dict) -> Dict:
         if not languages or not isinstance(languages, dict):
-            return 
+            return {}
         
-        total_lines = sum(languages.values())
-        return {
-            lang: round((bytes_count / total_lines) * 100, 2)
-            for lang, bytes_count in languages.items()
-        }
+        try:
+            total_lines = sum(languages.values())
+            if total_lines == 0:
+                return {}
+            
+            return {
+                lang: round((bytes_count / total_lines) * 100, 2)
+                for lang, bytes_count in languages.items()
+                if isinstance(bytes_count, (int, float)) and bytes_count > 0
+            }
+        except (TypeError, ValueError) as e:
+            print(f"Warning: Error processing languages: {e}")
+            return {}
 
 
     def _calculate_health_score(self, repo_data: Dict, commits: List[Dict], contributors: List[Dict]) -> HealthScore:
@@ -164,9 +203,31 @@ class GitHubAnalyzer:
         contributors = self.api.get_contributors(owner, repo)
         languages = self.api.get_languages(owner, repo)
         
+        # Validate data types
+        if not isinstance(repo_data, dict):
+            raise TypeError(f"Expected dict for repo_data, got {type(repo_data).__name__}")
+        if not isinstance(commits, list):
+            print(f"Warning: commits is not a list, got {type(commits).__name__}, converting to empty list")
+            commits = []
+        if not isinstance(contributors, list):
+            print(f"Warning: contributors is not a list, got {type(contributors).__name__}, converting to empty list")
+            contributors = []
+        if not isinstance(languages, dict):
+            print(f"Warning: languages is not a dict, got {type(languages).__name__}, converting to empty dict")
+            languages = {}
         
-        
-        actual_total_commits = sum(c['contributions'] for c in contributors) if contributors else len(commits)
+        # Calculate total commits safely
+        if contributors and isinstance(contributors, list) and len(contributors) > 0:
+            try:
+                actual_total_commits = sum(
+                    int(c.get('contributions', 0)) 
+                    for c in contributors 
+                    if isinstance(c, dict)
+                )
+            except (TypeError, ValueError):
+                actual_total_commits = len(commits) if commits else 0
+        else:
+            actual_total_commits = len(commits) if commits else 0
 
         # Process data
         overview = self._process_repo_overview(repo_data)

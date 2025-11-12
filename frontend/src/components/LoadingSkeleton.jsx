@@ -15,13 +15,13 @@ export default function LoadingSkeleton() {
                 <Grid item xs={12} md={6}>
                     <Paper elevation={3} sx={{ p: 3 }}>
                         <Skeleton variant="text" width="50%" height={30} sx={{ mb: 2 }} />
-                        <Skeleton variant="rectangular" height={200} />
+                        <Skeleton variant="rectangular" height={200} width={'35vw'} maxWidth={'40%'}/>
                     </Paper>
                 </Grid>
                 <Grid item xs={12} md={6}>
                     <Paper elevation={3} sx={{ p: 3 }}>
                         <Skeleton variant="text" width="50%" height={30} sx={{ mb: 2 }} />
-                        <Skeleton variant="rectangular" height={200} />
+                        <Skeleton variant="rectangular" height={200} width={'35vw'} maxWidth={'40%'}/>
                     </Paper>
                 </Grid>
             </Grid>

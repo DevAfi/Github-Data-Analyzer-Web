@@ -8,13 +8,7 @@ export default function LoadingSkeleton() {
             <Paper elevation={3} sx={{ p: 3, mb: 3 }}>
                 <Grid container spacing={2}>
                     <Grid item xs={12} md={4}>
-                        <Skeleton variant="text" height={30} />
-                    </Grid>
-                    <Grid item xs={12} md={4}>
-                        <Skeleton variant="text" height={30} />
-                    </Grid>
-                    <Grid item xs={12} md={4}>
-                        <Skeleton variant="text" height={30} />
+                        <Skeleton variant="rounded" height={120} />
                     </Grid>
                 </Grid>
             </Paper>

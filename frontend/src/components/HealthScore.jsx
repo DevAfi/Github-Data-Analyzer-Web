@@ -1,4 +1,8 @@
-import { Paper, Typography, Box, LinearProgress } from '@mui/material';
+import { Paper, Typography, Box, LinearProgress, Divider, Chip } from '@mui/material';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import PeopleIcon from '@mui/icons-material/People';
+import DescriptionIcon from '@mui/icons-material/Description';
 
 export default function HealthScore({ data }) {
   const getRatingColor = (rating) => {
@@ -11,55 +15,129 @@ export default function HealthScore({ data }) {
     }
   };
 
+  const scores = [
+    {
+      label: 'Activity Score',
+      value: data.activity_score,
+      color: 'primary',
+      icon: <TrendingUpIcon />,
+    },
+    {
+      label: 'Contributor Score',
+      value: data.contributor_score,
+      color: 'secondary',
+      icon: <PeopleIcon />,
+    },
+    {
+      label: 'Documentation Score',
+      value: data.documentation_score,
+      color: 'info',
+      icon: <DescriptionIcon />,
+    },
+  ];
+
   return (
-    <Paper elevation={3} sx={{ p: 3, mb: 3 }}>
-      <Typography variant="h5" gutterBottom>
-        ✅ Repository Health Score
-      </Typography>
-      
-      <Box sx={{ mb: 2 }}>
-        <Typography variant="body2" gutterBottom>
-          Activity Score: {data.activity_score}/100
+    <Paper 
+      elevation={3} 
+      sx={{ 
+        p: { xs: 2, sm: 3 },
+        height: '100%',
+        maxWidth: '100%',
+        width: '40vw',
+        borderRadius: 2,
+        display: 'flex',
+        flexDirection: 'column',
+      }}
+    >
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+        <CheckCircleIcon sx={{ color: `${getRatingColor(data.rating)}.main` }} />
+        <Typography 
+          variant="h5" 
+          sx={{ 
+            fontWeight: 700,
+            flexGrow: 1,
+          }}
+        >
+          Repository Health
         </Typography>
-        <LinearProgress 
-          variant="determinate" 
-          value={data.activity_score} 
-          color="primary"
-          sx={{ height: 10, borderRadius: 5 }}
-        />
       </Box>
       
-      <Box sx={{ mb: 2 }}>
-        <Typography variant="body2" gutterBottom>
-          Contributor Score: {data.contributor_score}/100
-        </Typography>
-        <LinearProgress 
-          variant="determinate" 
-          value={data.contributor_score} 
-          color="secondary"
-          sx={{ height: 10, borderRadius: 5 }}
-        />
+      <Divider sx={{ mb: 3 }} />
+      
+      {/* Individual Scores */}
+      <Box sx={{ mb: 3, flexGrow: 1 }}>
+        {scores.map((score, index) => (
+          <Box key={index} sx={{ mb: 3 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Box sx={{ color: `${score.color}.main` }}>
+                  {score.icon}
+                </Box>
+                <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                  {score.label}
+                </Typography>
+              </Box>
+              <Typography 
+                variant="body2" 
+                sx={{ 
+                  fontWeight: 700,
+                  color: `${score.color}.main`,
+                }}
+              >
+                {score.value}/100
+              </Typography>
+            </Box>
+            <LinearProgress 
+              variant="determinate" 
+              value={score.value} 
+              color={score.color}
+              sx={{ 
+                height: 8, 
+                borderRadius: 4,
+                bgcolor: 'background.default',
+              }}
+            />
+          </Box>
+        ))}
       </Box>
       
-      <Box sx={{ mb: 2 }}>
-        <Typography variant="body2" gutterBottom>
-          Documentation Score: {data.documentation_score}/100
+      {/* Overall Score Card */}
+      <Box 
+        sx={{ 
+          mt: 'auto',
+          p: 3, 
+          bgcolor: 'background.default', 
+          borderRadius: 2,
+          border: '2px solid',
+          borderColor: `${getRatingColor(data.rating)}.main`,
+          textAlign: 'center',
+        }}
+      >
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+          Overall Health Score
         </Typography>
-        <LinearProgress 
-          variant="determinate" 
-          value={data.documentation_score} 
-          color="info"
-          sx={{ height: 10, borderRadius: 5 }}
+        <Typography 
+          variant="h3" 
+          sx={{ 
+            fontWeight: 700,
+            color: `${getRatingColor(data.rating)}.main`,
+            mb: 1,
+          }}
+        >
+          {data.overall_score}
+          <Typography component="span" variant="h6" color="text.secondary">
+            /100
+          </Typography>
+        </Typography>
+        <Chip 
+          label={data.rating} 
+          color={getRatingColor(data.rating)}
+          sx={{ 
+            fontWeight: 600,
+            fontSize: '0.9rem',
+            height: 32,
+          }}
         />
-      </Box>
-      
-      <Box sx={{ mt: 3, p: 2, bgcolor: 'background.default', borderRadius: 1 }}>
-        <Typography variant="h6">
-          Overall Score: {data.overall_score}/100
-        </Typography>
-        <Typography variant="h5" color={`${getRatingColor(data.rating)}.main`} sx={{ mt: 1 }}>
-          {data.rating}
-        </Typography>
       </Box>
     </Paper>
   );

@@ -1,11 +1,14 @@
-import { Paper, Typography, Grid, Box, Divider } from '@mui/material';
+import { Paper, Typography, Grid, Box, Divider, Button, Stack } from '@mui/material';
 import StarIcon from '@mui/icons-material/Star';
 import ForkRightIcon from '@mui/icons-material/ForkRight';
 import CodeIcon from '@mui/icons-material/Code';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import UpdateIcon from '@mui/icons-material/Update';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+
 
 export default function Overview({ data }) {
+  const repoLink = `https://github.com/${data.full_name}`
   return (
     <Paper 
       elevation={3} 
@@ -20,7 +23,13 @@ export default function Overview({ data }) {
             : 'linear-gradient(135deg, rgba(25, 118, 210, 0.05) 0%, rgba(25, 118, 210, 0.02) 100%)',
       }}
     >
-      <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', mb: 1, justifyContent: 'space-between' }}>
+
+      <Stack
+              direction={{ xs: "column", sm: "row" }}
+              useFlexGap
+              sx={{ alignItems: "stretch", py: 4, justifyContent: 'space-between' }}
+            >
         <Typography 
           component="span"
           sx={{ 
@@ -44,6 +53,17 @@ export default function Overview({ data }) {
         >
           Repository Overview
         </Typography>
+          </Stack>
+
+
+        <Button 
+          variant="outlined" 
+          href={repoLink}
+          target="_blank"
+          startIcon={<OpenInNewIcon />}
+        >
+          View on GitHub
+        </Button>
       </Box>
       
       <Divider sx={{ mb: 3 }} />

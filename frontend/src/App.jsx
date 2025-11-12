@@ -1,5 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Container, Alert, CssBaseline, ThemeProvider, createTheme, Box } from '@mui/material';
+import { Container, Alert, CssBaseline, ThemeProvider, createTheme, Box, Link, Typography, Stack } from '@mui/material';
+import GitHubIcon from "@mui/icons-material/GitHub";
+import EmailIcon from '@mui/icons-material/Email';
+import LinkedInIcon from '@mui/icons-material/LinkedIn';
+
 import { useSearchParams } from 'react-router-dom';
 import Results from './pages/Results';
 import { analyzeRepo } from './services/api';
@@ -75,8 +79,40 @@ function App() {
           
           {data && <Results data={data} />}
         </Container>
+
+        {/* Ive addeed this basic footer, WILL CHANGE LATER TO FULL ONE */}
+        <Stack
+          direction={{ xs: "column", sm: "row" }}
+          spacing={2}
+          sx={{ 
+            alignItems: "center", 
+            justifyContent: 'space-between',
+            px: 5,
+            py: 4,
+            mt: 8,
+            borderTop: 1,
+            borderColor: 'rgba(255,255,255,0.1)'
+          }}
+        >
+          <Typography variant='subtitle1'>
+            GitHub Repository Analyzer
+          </Typography>
+          <Box sx={{ display: 'flex', gap: 2 }}>
+            <Link href="https://github.com/DevAfi" target="_blank">
+              <GitHubIcon sx={{ fontSize: "2rem", color: "white" }} />
+            </Link>
+            <Link href="mailto:afonsomiguelcarvlho2006@gmail.com">
+              <EmailIcon sx={{ fontSize: "2rem", color: "white" }} />
+            </Link>
+            <Link 
+              href="https://www.linkedin.com/in/afonso-miguel-capela-flores-de-carvalho-885074266" 
+              target="_blank"
+            >
+              <LinkedInIcon sx={{ fontSize: "2rem", color: "white" }} />
+            </Link>
+          </Box>
+        </Stack>
       </Box>
-      
     </ThemeProvider>
   );
 }

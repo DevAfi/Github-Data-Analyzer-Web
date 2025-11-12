@@ -12,11 +12,11 @@ export default function LanguageChart({ data }) {
     <Paper 
       elevation={3} 
       sx={{ 
-        p: { xs: 2, sm: 3 },
+        p: { xs: 2, sm: 3, md: 4 },
         borderRadius: 2,
         height: '100%',
-        maxWidth: '100%',
-        width: '40vw',
+        width: '100%',
+        minWidth: { md: '400px' },
         display: 'flex',
         flexDirection: 'column',
       }}
@@ -34,7 +34,7 @@ export default function LanguageChart({ data }) {
       
       <Divider sx={{ mb: 3 }} />
       
-      <Box sx={{ flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <Box sx={{ flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', overflow: 'hidden' }}>
         <PieChart
           series={[
             {
@@ -44,6 +44,7 @@ export default function LanguageChart({ data }) {
             },
           ]}
           height={350}
+          width={undefined}
           margin={{ top: 20, bottom: 20 }}
         />
       </Box>

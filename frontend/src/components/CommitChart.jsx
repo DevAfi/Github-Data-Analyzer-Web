@@ -46,8 +46,7 @@ export default function CommitChart({ data }) {
       sx={{ 
         p: { xs: 2, sm: 3 },
         height: '100%',
-        maxWidth: '100%',
-        width: 1500,
+        width: '100%',
         borderRadius: 2,
         display: 'flex',
         flexDirection: 'column',
@@ -66,9 +65,9 @@ export default function CommitChart({ data }) {
       
       <Divider sx={{ mb: 3 }} />
       
-      <Grid container spacing={4} sx={{ flexGrow: 1 }}>
+      <Grid container spacing={{ xs: 2, sm: 3, md: 4 }} sx={{ flexGrow: 1 }}>
         {stats.map((stat, index) => (
-          <Grid item xs={6} key={index}>
+          <Grid item xs={12} sm={6} key={index}>
             <Box
               sx={{
                 p: 2,

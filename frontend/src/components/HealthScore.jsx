@@ -40,10 +40,10 @@ export default function HealthScore({ data }) {
     <Paper 
       elevation={3} 
       sx={{ 
-        p: { xs: 2, sm: 3 },
+        p: { xs: 2, sm: 3, md: 4 },
         height: '100%',
-        maxWidth: '100%',
-        width: '40vw',
+        width: '100%',
+        minWidth: { md: '400px' },
         borderRadius: 2,
         display: 'flex',
         flexDirection: 'column',
@@ -64,7 +64,6 @@ export default function HealthScore({ data }) {
       
       <Divider sx={{ mb: 3 }} />
       
-      {/* Individual Scores */}
       <Box sx={{ mb: 3, flexGrow: 1 }}>
         {scores.map((score, index) => (
           <Box key={index} sx={{ mb: 3 }}>
@@ -101,7 +100,6 @@ export default function HealthScore({ data }) {
         ))}
       </Box>
       
-      {/* Overall Score Card */}
       <Box 
         sx={{ 
           mt: 'auto',

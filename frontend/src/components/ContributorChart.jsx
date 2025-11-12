@@ -2,7 +2,6 @@ import { Paper, Typography, Divider, Box } from '@mui/material';
 import { BarChart } from '@mui/x-charts/BarChart';
 
 export default function ContributorChart({ data }) {
-  // Take top 10 contributors
   const topContributors = data.slice(0, 10);
   
   const chartData = {
@@ -17,8 +16,7 @@ export default function ContributorChart({ data }) {
         p: { xs: 2, sm: 3 },
         borderRadius: 2,
         height: '100%',
-        maxWidth: '100%',
-        width: 1500,
+        width: '100%',
         display: 'flex',
         flexDirection: 'column',
       }}
@@ -36,7 +34,7 @@ export default function ContributorChart({ data }) {
       
       <Divider sx={{ mb: 3 }} />
       
-      <Box sx={{ flexGrow: 1, display: 'flex', alignItems: 'center' }}>
+      <Box sx={{ flexGrow: 1, display: 'flex', alignItems: 'center', width: '100%', overflow: 'auto' }}>
         <BarChart
           xAxis={[{ 
             scaleType: 'band', 
@@ -52,6 +50,7 @@ export default function ContributorChart({ data }) {
             color: '#1976d2',
           }]}
           height={350}
+          width={undefined}
           margin={{ left: 70, right: 20, top: 20, bottom: 60 }}
         />
       </Box>

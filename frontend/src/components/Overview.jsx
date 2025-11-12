@@ -48,7 +48,6 @@ export default function Overview({ data }) {
       
       <Divider sx={{ mb: 3 }} />
       
-      {/* Repository Name & Description */}
       <Box sx={{ mb: 4 }}>
         <Typography variant="h5" sx={{ fontWeight: 600, mb: 0.5 }}>
           {data.name}
@@ -70,7 +69,6 @@ export default function Overview({ data }) {
         )}
       </Box>
 
-      {/* Stats Cards */}
       <Grid container spacing={4} sx={{width: '100%'}}>
         <Grid item xs={6} sm={4} md={2.4}>
           <Box

@@ -53,12 +53,30 @@ function App() {
       setData(results);
       saveRecentSearch(owner, repo);
     } catch (err) {
-      setError(err.response?.data?.error || err.message);
-    } finally {
+        const rawError = err.response?.data?.error || err.message || 'Something went wrong';
+        const improvedError = getBetterMessage(rawError);
+        setError(improvedError);
+      } finally {
       setLoading(false);
     }
 
   };
+
+  const betterErrorMessages = {
+    'Repository not found': '🔍 Oops! We couldn\'t find that repository. Double-check the spelling?',
+    'Rate limit exceeded': '⏰ GitHub API limit reached! Try again in an hour, or add your GitHub token.',
+    'access forbidden': '🔒 This repository might be private or requires authentication.',
+    'Network error': '🌐 Connection problem. Check your internet and try again!',
+    'Missing owner or repo': '📝 Please enter both owner and repository name.',
+  }
+  const getBetterMessage = (error) => {
+    for (const[key, message] of Object.entries(betterErrorMessages)) {
+      if (error.toLowerCase().includes(key.toLowerCase())) {
+        return message
+      }
+    }
+    return `❌ ${error}`
+  }
 
   return (
     <ThemeProvider theme={theme}>
@@ -103,7 +121,20 @@ function App() {
             )
           }
 
-          {error && <Alert severity="error">{error}</Alert>}
+          {error && (
+            <Alert 
+              severity="error" 
+              sx={{ 
+                mb: 3,
+                '& .MuiAlert-message': {
+                  fontSize: '1rem',
+                }
+              }}
+              onClose={() => setError(null)}
+            >
+              {error}
+            </Alert>
+          )}
 
           
           {data && (

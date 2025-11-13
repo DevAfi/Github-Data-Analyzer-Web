@@ -59,6 +59,15 @@ function App() {
       const results = await analyzeRepo(owner, repo);
       setData(results);
       saveRecentSearch(owner, repo);
+
+      if (window.gtag) {
+        window.gtag('event', 'analyze_repository', {
+          event_category: 'engagement',
+          event_label: `${owner}/${repo}`,
+          repo_owner: owner,
+          repo_name: repo
+        });
+      }
     } catch (err) {
         const rawError = err.response?.data?.error || err.message || 'Something went wrong';
         const improvedError = getBetterMessage(rawError);

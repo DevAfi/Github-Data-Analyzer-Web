@@ -1,10 +1,13 @@
+import os
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from services.analyzer import GitHubAnalyzer
 from services.github_api import GitHubAPI
 
 app = Flask(__name__)
-CORS(app)
+allowed_origins = os.getenv('ALLOWED_ORIGINS', 'http://localhost:5173').split(',')
+CORS(app, origins=allowed_origins)
+
 
 @app.route('/api/health', methods=['GET'])
 def health():
@@ -81,4 +84,7 @@ def analyze():
 
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    import os
+    port = int(os.getenv('PORT', 5000))
+    debug = os.getenv('FLASK_ENV') == 'development'
+    app.run(debug=debug, host='0.0.0.0', port=port)

@@ -4,21 +4,21 @@ from typing import Optional, Any
 import hashlib
 
 class SimpleCache:
-    def __init__(self, cache_dir: str = "cache"):
+    def __init__(self, cache_dir: str = "backend/cache"):
         self.cache_dir = Path(cache_dir)
-        self.cache_dir.mkdir(exist_ok=True)
+        self.cache_dir.mkdir(exist_ok=True, parents=True)
         
     def _get_cache_key(self, url: str, params: Optional[dict] = None) -> str:
         """Generate a unique cache key from URL and params."""
         # TODO: Create a unique string from url + params, then hash it
         hash_str = f"{url}_{params}"
-        return hashlib.md5(hash_str.encode()).hexdigest
+        return hashlib.md5(hash_str.encode()).hexdigest()
     
     def get(self, url: str, params: Optional[dict] = None) -> Optional[Any]:
         """Get cached data if it exists."""
         # TODO: Check if cache file exists, load and return it
         key = self._get_cache_key(url, params)
-        file = self.cache_dir / F"{key}.pkl"
+        file = self.cache_dir / f"{key}.pkl"
         if file.exists():
             with open(file, 'rb') as f:
                 return pickle.load(f)

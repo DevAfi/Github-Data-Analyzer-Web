@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Container from "@mui/material/Container";
@@ -10,6 +11,7 @@ import GitHubIcon from "@mui/icons-material/GitHub";
 import { Link, Fade } from "@mui/material";
 
 export default function Hero({ onAnalyze, loading, owner: ownerProp, repo: repoProp, onOwnerChange, onRepoChange }) {
+  const navigate = useNavigate();
   const [owner, setOwner] = useState(ownerProp || "");
   const [repo, setRepo] = useState(repoProp || "");
 
@@ -63,7 +65,23 @@ export default function Hero({ onAnalyze, loading, owner: ownerProp, repo: repoP
               sx={{ alignItems: "center", width: { xs: "100%", sm: "70%" } }}
             >
               <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
-                <Link href="http://localhost:5173"> {/* DEBUGGINGz */}
+                <Link
+                  component="button"
+                  onClick={() => {
+                    navigate("/");
+                    if (onOwnerChange) onOwnerChange("");
+                    if (onRepoChange) onRepoChange("");
+                    setOwner("");
+                    setRepo("");
+                  }}
+                  sx={{ 
+                    cursor: "pointer",
+                    textDecoration: "none",
+                    border: "none",
+                    background: "none",
+                    padding: 0
+                  }}
+                >
                   <GitHubIcon sx={{ fontSize: "3rem", color: "primary.main" }} />
                 </Link>
                 

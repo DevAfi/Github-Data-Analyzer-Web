@@ -36,11 +36,18 @@ function App() {
     if (ownerParam && repoParam) {
       setOwner(ownerParam);
       setRepo(repoParam);
-      if (!data && !loading) {
+      // Only analyze if we don't have data or if the repo changed
+      const currentRepo = data?.overview?.full_name;
+      const newRepo = `${ownerParam}/${repoParam}`;
+      if ((!data && !loading) || (currentRepo !== newRepo && !loading)) {
         handleAnalyze(ownerParam, repoParam);
       }
+    } else {
+      // Clear data when navigating to home (no search params)
+      setData(null);
+      setError(null);
     }
-  }, []);
+  }, [searchParams]);
 
   const handleAnalyze = async (owner, repo) => {
     setLoading(true);

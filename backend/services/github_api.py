@@ -12,17 +12,24 @@ class GitHubAPI:
         self.use_cache = use_cache
         self.cache = SimpleCache() if use_cache else None
 
-        #Headers for all sessions
-        self.session.headers.update({
-            'Authorization': f'token {self.token}',
+
+        headers = {
             'Accept': 'application/vnd.github.v3+json',
-            'User-Agent': 'GitHub-Analyzer-CLI' #KIM
-        })
+            'User-Agent': 'GitHub-Analyzer-CLI'
+        }
+
+        if self.token:
+            headers['Authorization'] = f'token {self.token}'
+
+        self.session.headers.update(headers)
+
+
 
     #Generic request
     def _make_request(self, endpoint: str, params: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
             """Make a GET request to the Github API"""
             url = f"{self.base_url}{endpoint}"
+            response = None
 
             if self.use_cache:
                 cachedData = self.cache.get(url, params=params)
@@ -46,9 +53,9 @@ class GitHubAPI:
                 return data
             
             except requests.exceptions.HTTPError as e:
-                if response.status_code == 403:
+                if response and response.status_code == 403:
                     raise Exception(f"Rate limit exceeded or access forbidden: {e}")
-                elif response.status_code == 404:
+                elif response and response.status_code == 404:
                     raise Exception(f"Repository not found: {e}")
                 else:
                     raise Exception(f"HTTP error occurred: {e}")

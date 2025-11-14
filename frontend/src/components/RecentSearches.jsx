@@ -28,7 +28,16 @@ export default function RecentSearches({ onSelect }) {
           <Chip
             key={index}
             label={`${search.owner}/${search.repo}`}
-            onClick={() => onSelect(search.owner, search.repo)}
+            onClick={() => {
+              if (window.gtag) {
+                window.gtag('event', 'click_recent_search', {
+                  event_category: 'engagement',
+                  repo: `${search.owner}/${search.repo}`
+                });
+              }
+              onSelect(search.owner, search.repo);
+            }}
+                      
             variant="outlined"
             clickable
           />

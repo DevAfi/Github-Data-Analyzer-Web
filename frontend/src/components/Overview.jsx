@@ -61,6 +61,15 @@ export default function Overview({ data }) {
           href={repoLink}
           target="_blank"
           startIcon={<OpenInNewIcon />}
+          onClick={() => {
+            if (window.gtag) {
+              window.gtag('event', 'click_view_on_github', {
+                event_category: 'engagement',
+                repo: data.full_name
+              });
+            }
+          }}
+        
         >
           View on GitHub
         </Button>

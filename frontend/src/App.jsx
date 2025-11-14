@@ -36,14 +36,22 @@ function App() {
     if (ownerParam && repoParam) {
       setOwner(ownerParam);
       setRepo(repoParam);
-      // Only analyze if we don't have data or if the repo changed
+      
       const currentRepo = data?.overview?.full_name;
       const newRepo = `${ownerParam}/${repoParam}`;
+      
       if ((!data && !loading) || (currentRepo !== newRepo && !loading)) {
+        // TRACK SHARED URL USAGE - ADD THIS
+        if (window.gtag && !data) {  // Only track on first load from URL
+          window.gtag('event', 'load_from_shared_url', {
+            event_category: 'engagement',
+            repo: `${ownerParam}/${repoParam}`
+          });
+        }
+        
         handleAnalyze(ownerParam, repoParam);
       }
     } else {
-      // Clear data when navigating to home (no search params)
       setData(null);
       setError(null);
     }
@@ -72,6 +80,14 @@ function App() {
         const rawError = err.response?.data?.error || err.message || 'Something went wrong';
         const improvedError = getBetterMessage(rawError);
         setError(improvedError);
+
+        if (window.gtag) {
+          window.gtag('event', 'analyze_error', {
+            event_category: 'error',
+            error_message: rawError,
+            repo: `${owner}/${repo}`
+          });
+        }
       } finally {
       setLoading(false);
     }

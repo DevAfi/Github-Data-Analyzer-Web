@@ -1,8 +1,9 @@
 from services.github_api import GitHubAPI
-from services.models import RepoOverview, Contributor, CommitStats, HealthScore, RecentCommit, ReleaseInfo
+from services.models import RepoOverview, Contributor, CommitStats, HealthScore, RecentCommit, ReleaseInfo, HeatmapDay
 from services.cache import SimpleCache
 from typing import List, Dict, Tuple, Optional
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
+from collections import defaultdict
 
 class GitHubAnalyzer:
     def __init__(self, api: GitHubAPI):
@@ -15,22 +16,6 @@ class GitHubAnalyzer:
         
         license_info = repo_data.get('license')
         license_name = license_info.get('name', 'None') if license_info and isinstance(license_info, dict) else 'None'
-        
-        # GitHub API field names (v3):
-        # - open_issues: number of open issues
-        # - subscribers_count: number of watchers (watchers_count is deprecated)
-        # - size: repository size in KB
-        # - topics: array of topic strings
-        # - license: object with 'name', 'spdx_id', etc.
-        
-        # GitHub API v3 returns:
-        # - open_issues: number of open issues
-        # - subscribers_count: number of watchers (NOT watchers_count)
-        # - size: repository size in KB
-        # - topics: array of topic strings
-        # - license: object with 'name' field
-        
-        # Extract values with proper fallbacks
         open_issues = repo_data.get('open_issues')
         if open_issues is None:
             open_issues = repo_data.get('open_issues_count', 0)
@@ -39,14 +24,11 @@ class GitHubAnalyzer:
         if watchers is None:
             watchers = repo_data.get('watchers') or repo_data.get('watchers_count', 0)
         
-        size = repo_data.get('size', 0)  # Size in KB
+        size = repo_data.get('size', 0)
         topics = repo_data.get('topics', [])
         
-        # Ensure topics is a list
         if not isinstance(topics, list):
             topics = []
-        
-        # Convert to proper types
         try:
             open_issues = int(open_issues) if open_issues is not None else 0
             watchers = int(watchers) if watchers is not None else 0
@@ -56,7 +38,6 @@ class GitHubAnalyzer:
             watchers = 0
             size = 0
         
-        # Get additional fields
         default_branch = repo_data.get('default_branch', 'main')
         open_pulls = 0  # Will be set later when we fetch PRs
         branch_count = 0  # Will be set later when we fetch branches
@@ -97,7 +78,6 @@ class GitHubAnalyzer:
         if not isinstance(commits, list):
             commits = []
         
-        # Parse all commit dates
         commit_dates = []
         for commit in commits:
             if not isinstance(commit, dict):
@@ -117,18 +97,14 @@ class GitHubAnalyzer:
                 print(f"Warning: Skipping invalid commit data: {e}")
                 continue
         
-        # Calculate commits per day (rough estimate based on fetched commits)
         if commit_dates:
             date_range = (max(commit_dates) - min(commit_dates)).days or 1
             commits_per_day = total_commits / date_range
         else:
             commits_per_day = 0.0
         
-        # Most active day of week
-        day_counter = Counter([d.strftime('%A') for d in commit_dates])  # Monday, Tuesday, etc.
+        day_counter = Counter([d.strftime('%A') for d in commit_dates])
         most_active_day = day_counter.most_common(1)[0][0] if day_counter else "Unknown"
-        
-        # Most active hour
         hour_counter = Counter([d.hour for d in commit_dates])
         most_active_hour = hour_counter.most_common(1)[0][0] if hour_counter else 0
         
@@ -208,10 +184,9 @@ class GitHubAnalyzer:
                 if not isinstance(author_info, dict):
                     continue
                 
-                sha = commit.get('sha', '')[:7]  # Short SHA
+                sha = commit.get('sha', '')[:7]
                 message = commit_info.get('message', 'No message')
-                # Get first line of message (subject)
-                message = message.split('\n')[0][:100]  # Limit length
+                message = message.split('\n')[0][:100]
                 author = author_info.get('name', 'Unknown')
                 date_str = author_info.get('date')
                 url = commit.get('html_url', '')
@@ -258,10 +233,61 @@ class GitHubAnalyzer:
             print(f"Warning: Error processing release data: {e}")
             return None
 
+    def _process_heatmap(self, commits: List[Dict]) -> List[HeatmapDay]:
+        """Process commits into heatmap data (last 365 days)."""
+        if not commits or not isinstance(commits, list):
+            return []
+        
+        # Count commits per day
+        commit_counts = defaultdict(int)
+        today = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
+        one_year_ago = today - timedelta(days=365)
+        
+        for commit in commits:
+            if not isinstance(commit, dict):
+                continue
+            try:
+                commit_info = commit.get('commit', {})
+                if not isinstance(commit_info, dict):
+                    continue
+                author_info = commit_info.get('author', {})
+                if not isinstance(author_info, dict):
+                    continue
+                date_str = author_info.get('date')
+                if date_str:
+                    commit_date = datetime.fromisoformat(date_str.replace('Z', '+00:00'))
+                    commit_date = commit_date.replace(hour=0, minute=0, second=0, microsecond=0)
+                    
+                    if commit_date >= one_year_ago and commit_date <= today:
+                        date_key = commit_date.date().isoformat()
+                        commit_counts[date_key] += 1
+            except (KeyError, ValueError, AttributeError) as e:
+                continue
+        
+        heatmap_data = []
+        max_count = max(commit_counts.values()) if commit_counts else 1
+        
+        current_date = one_year_ago
+        while current_date <= today:
+            date_key = current_date.date().isoformat()
+            count = commit_counts.get(date_key, 0)
+            
+            if max_count > 0:
+                level = min(4, int((count / max_count) * 4))
+            else:
+                level = 0
+            
+            heatmap_data.append(HeatmapDay(
+                date=date_key,
+                count=count,
+                level=level
+            ))
+            
+            current_date += timedelta(days=1)
+        
+        return heatmap_data
 
     def _calculate_health_score(self, repo_data: Dict, commits: List[Dict], contributors: List[Dict]) -> HealthScore:
-        
-        # days since last activity (40%)
         days_since_update = (datetime.now(timezone.utc) - datetime.fromisoformat(repo_data['updated_at'].replace('Z', '+00:00'))).days
         if days_since_update <= 7:
             activity_score = 100
@@ -272,7 +298,6 @@ class GitHubAnalyzer:
         else:
             activity_score = 40
         
-        # number of active contributors (30%)
         number_of_contributors = len(contributors)
         if number_of_contributors >= 50:
             contributor_score = 100
@@ -284,9 +309,7 @@ class GitHubAnalyzer:
             contributor_score = 40
         else:
             contributor_score = 20
-        
 
-        # Documentation score, README, lisence and description (30%)
         doc_score = 0
         if repo_data.get('description'):
             doc_score += 40
@@ -297,7 +320,6 @@ class GitHubAnalyzer:
         
         documentation_score = min(doc_score, 100)
 
-        #Overall grade
         overall_score = (
             activity_score * 0.4 +
             contributor_score * 0.3 +
@@ -329,19 +351,27 @@ class GitHubAnalyzer:
         """Main method - analyzes a repository and returns all insights."""
         print(f"Analyzing {owner}/{repo}...")
 
-        
-        # Fetch all data
         repo_data = self.api.get_repo(owner, repo)
         commits = self.api.get_commits(owner, repo, per_page=100)
+        all_commits = list(commits) if isinstance(commits, list) else []
+        if len(all_commits) > 0:
+            for page in range(2, 6):
+                try:
+                    page_commits = self.api.get_commits(owner, repo, per_page=100, page=page)
+                    if isinstance(page_commits, list) and len(page_commits) > 0:
+                        all_commits.extend(page_commits)
+                    else:
+                        break
+                except:
+                    break
+        commits = all_commits
         contributors = self.api.get_contributors(owner, repo)
         languages = self.api.get_languages(owner, repo)
         
-        # Fetch new data
         pull_requests = self.api.get_pull_requests(owner, repo, state='open', per_page=100)
         branches = self.api.get_branches(owner, repo)
         latest_release = self.api.get_latest_release(owner, repo)
         
-        # Validate data types
         if not isinstance(repo_data, dict):
             raise TypeError(f"Expected dict for repo_data, got {type(repo_data).__name__}")
         if not isinstance(commits, list):
@@ -360,7 +390,6 @@ class GitHubAnalyzer:
             print(f"Warning: branches is not a list, got {type(branches).__name__}, converting to empty list")
             branches = []
         
-        # Calculate total commits safely
         if contributors and isinstance(contributors, list) and len(contributors) > 0:
             try:
                 actual_total_commits = sum(
@@ -373,10 +402,8 @@ class GitHubAnalyzer:
         else:
             actual_total_commits = len(commits) if commits else 0
 
-        # Process data
         overview = self._process_repo_overview(repo_data)
         
-        # Update overview with PR and branch counts
         if isinstance(pull_requests, list):
             overview.open_pulls = len(pull_requests)
             print(f"Found {len(pull_requests)} open pull requests")
@@ -398,9 +425,14 @@ class GitHubAnalyzer:
         language_breakdown = self._process_languages(languages)
         health = self._calculate_health_score(repo_data, commits, contributors)
         
-        # Process new data
         recent_commits = self._process_recent_commits(commits, limit=10)
         release_info = self._process_release(latest_release)
+        heatmap_data = self._process_heatmap(commits)
+        
+        print(f"Heatmap data: {len(heatmap_data)} days processed")
+        if heatmap_data:
+            total_commits_in_heatmap = sum(d.count for d in heatmap_data)
+            print(f"Total commits in heatmap: {total_commits_in_heatmap}")
         
         return {
             'overview': overview,
@@ -409,5 +441,6 @@ class GitHubAnalyzer:
             'languages': language_breakdown,
             'health': health,
             'recent_commits': recent_commits,
-            'release': release_info
+            'release': release_info,
+            'heatmap': heatmap_data
         }

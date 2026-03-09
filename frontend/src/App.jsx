@@ -41,8 +41,7 @@ function App() {
       const newRepo = `${ownerParam}/${repoParam}`;
       
       if ((!data && !loading) || (currentRepo !== newRepo && !loading)) {
-        // TRACK SHARED URL USAGE - ADD THIS
-        if (window.gtag && !data) {  // Only track on first load from URL
+        if (window.gtag && !data) {
           window.gtag('event', 'load_from_shared_url', {
             event_category: 'engagement',
             repo: `${ownerParam}/${repoParam}`
@@ -178,7 +177,6 @@ function App() {
           )}
         </Container>
 
-        {/* Ive addeed this basic footer, WILL CHANGE LATER TO FULL ONE */}
         <Stack
           direction={{ xs: "column", sm: "row" }}
           spacing={2}

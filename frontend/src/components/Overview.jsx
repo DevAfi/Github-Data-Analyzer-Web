@@ -9,15 +9,11 @@ import BugReportIcon from '@mui/icons-material/BugReport';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import StorageIcon from '@mui/icons-material/Storage';
 import GavelIcon from '@mui/icons-material/Gavel';
-//import PullRequestIcon from '@mui/icons-material/PullRequest';
-//import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import WarningIcon from '@mui/icons-material/Warning';
-
 
 export default function Overview({ data }) {
   const repoLink = `https://github.com/${data?.full_name || 'unknown/unknown'}`
   
-  // Debug logging
   if (data) {
     console.log('Overview data:', {
       open_pulls: data.open_pulls,

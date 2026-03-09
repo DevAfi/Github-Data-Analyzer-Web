@@ -32,6 +32,7 @@ def analyze():
         print("Type of languages:", type(results['languages']))
         print("Languages data:", results['languages'])
         print(f"PRs: {results['overview'].open_pulls}, Branches: {results['overview'].branch_count}, Default branch: {results['overview'].default_branch}")
+        print(f"Heatmap: {len(results.get('heatmap', []))} days")
 
 
         response = {
@@ -91,7 +92,15 @@ def analyze():
                 'published_at': results['release'].published_at.isoformat(),
                 'url': results['release'].url,
                 'prerelease': results['release'].prerelease
-            } if results.get('release') and results['release'] is not None else None
+            } if results.get('release') and results['release'] is not None else None,
+            'heatmap': [
+                {
+                    'date': day.date,
+                    'count': day.count,
+                    'level': day.level
+                }
+                for day in results.get('heatmap', [])
+            ]
         }
         
         return jsonify(response), 200

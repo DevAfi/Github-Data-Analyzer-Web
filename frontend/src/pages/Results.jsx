@@ -6,6 +6,7 @@ import LanguageChart from '../components/LanguageChart';
 import HealthScore from '../components/HealthScore';
 import RecentCommits from '../components/RecentCommits';
 import ReleaseInfo from '../components/ReleaseInfo';
+import CommitHeatmap from '../components/CommitHeatmap';
 
 export default function Results({ data }) {
   return (
@@ -66,6 +67,15 @@ export default function Results({ data }) {
           </Slide>
         </Box>
       )}
+
+      {/* Commit Heatmap */}
+      <Box sx={{ mb: 4, width: '100%' }}>
+        <Slide direction="up" in={true} timeout={950}>
+          <div>
+            <CommitHeatmap heatmap={data?.heatmap || []} />
+          </div>
+        </Slide>
+      </Box>
 
       {/* Recent Commits and Release Info */}
       <Grid container spacing={3} sx={{ mb: 4 }}>

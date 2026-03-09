@@ -57,3 +57,9 @@ class ReleaseInfo:
     published_at: datetime
     url: str
     prerelease: bool
+
+@dataclass
+class HeatmapDay:
+    date: str  # ISO format date string
+    count: int  # Number of commits on this day
+    level: int  # Intensity level 0-4 for color coding

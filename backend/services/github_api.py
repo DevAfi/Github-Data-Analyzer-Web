@@ -23,9 +23,6 @@ class GitHubAPI:
 
         self.session.headers.update(headers)
 
-
-
-    #Generic request
     def _make_request(self, endpoint: str, params: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
             """Make a GET request to the Github API"""
             url = f"{self.base_url}{endpoint}"
@@ -116,7 +113,6 @@ class GitHubAPI:
             
             all_prs.extend(page_prs)
             
-            # Check if there are more pages (if we got less than per_page, we're done)
             if len(page_prs) < per_page:
                 break
             
@@ -144,7 +140,6 @@ class GitHubAPI:
             
             all_branches.extend(page_branches)
             
-            # Check if there are more pages (if we got less than per_page, we're done)
             if len(page_branches) < per_page:
                 break
             

@@ -13,6 +13,57 @@ class GitHubAnalyzer:
         if not isinstance(repo_data, dict):
             raise TypeError(f"Expected dict for repo_data, got {type(repo_data).__name__}")
         
+        license_info = repo_data.get('license')
+        license_name = license_info.get('name', 'None') if license_info and isinstance(license_info, dict) else 'None'
+        
+        # GitHub API field names (v3):
+        # - open_issues: number of open issues
+        # - subscribers_count: number of watchers (watchers_count is deprecated)
+        # - size: repository size in KB
+        # - topics: array of topic strings
+        # - license: object with 'name', 'spdx_id', etc.
+        
+        # GitHub API v3 returns:
+        # - open_issues: number of open issues
+        # - subscribers_count: number of watchers (NOT watchers_count)
+        # - size: repository size in KB
+        # - topics: array of topic strings
+        # - license: object with 'name' field
+        
+        # Extract values with proper fallbacks
+        open_issues = repo_data.get('open_issues')
+        if open_issues is None:
+            open_issues = repo_data.get('open_issues_count', 0)
+        
+        watchers = repo_data.get('subscribers_count')
+        if watchers is None:
+            watchers = repo_data.get('watchers') or repo_data.get('watchers_count', 0)
+        
+        size = repo_data.get('size', 0)  # Size in KB
+        topics = repo_data.get('topics', [])
+        
+        # Ensure topics is a list
+        if not isinstance(topics, list):
+            topics = []
+        
+        # Convert to proper types
+        try:
+            open_issues = int(open_issues) if open_issues is not None else 0
+            watchers = int(watchers) if watchers is not None else 0
+            size = int(size) if size is not None else 0
+        except (ValueError, TypeError):
+            open_issues = 0
+            watchers = 0
+            size = 0
+        
+        # Debug logging - DO NOT DELETE
+        print(f"🔍 Extracted Repo Data:")
+        print(f"   - open_issues: {open_issues} (from API: {repo_data.get('open_issues')})")
+        print(f"   - watchers: {watchers} (from API: {repo_data.get('subscribers_count')})")
+        print(f"   - size: {size} KB (from API: {repo_data.get('size')})")
+        print(f"   - topics: {len(topics)} topics")
+        print(f"   - license: {license_name}")
+        
         return RepoOverview(
             name=repo_data.get('name', 'Unknown'),
             full_name=repo_data.get('full_name', 'Unknown/Unknown'),
@@ -21,7 +72,12 @@ class GitHubAnalyzer:
             forks=repo_data.get('forks_count', 0),
             created_at=datetime.fromisoformat(repo_data.get('created_at', '').replace('Z', '+00:00')),
             updated_at=datetime.fromisoformat(repo_data.get('updated_at', '').replace('Z', '+00:00')),
-            language=repo_data.get('language') or 'Unknown'
+            language=repo_data.get('language') or 'Unknown',
+            open_issues=int(open_issues) if open_issues else 0,
+            watchers=int(watchers) if watchers else 0,
+            size=int(size) if size else 0,
+            license_name=license_name or 'None',
+            topics=topics if isinstance(topics, list) else []
         )
 
 

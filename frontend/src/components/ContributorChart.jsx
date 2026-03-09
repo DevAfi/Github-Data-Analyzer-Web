@@ -29,7 +29,7 @@ export default function ContributorChart({ data }) {
           mb: 2,
         }}
       >
-        👥 Top Contributors
+        👥 Contributors
       </Typography>
       
       <Divider sx={{ mb: 3 }} />

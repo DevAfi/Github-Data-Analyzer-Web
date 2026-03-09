@@ -1,10 +1,14 @@
-import { Paper, Typography, Grid, Box, Divider, Button, Stack } from '@mui/material';
+import { Paper, Typography, Grid, Box, Divider, Button, Stack, Chip } from '@mui/material';
 import StarIcon from '@mui/icons-material/Star';
 import ForkRightIcon from '@mui/icons-material/ForkRight';
 import CodeIcon from '@mui/icons-material/Code';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import UpdateIcon from '@mui/icons-material/Update';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import BugReportIcon from '@mui/icons-material/BugReport';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import StorageIcon from '@mui/icons-material/Storage';
+import GavelIcon from '@mui/icons-material/Gavel';
 
 
 export default function Overview({ data }) {
@@ -91,15 +95,42 @@ export default function Overview({ data }) {
               color: 'text.secondary',
               lineHeight: 1.7,
               maxWidth: '800px',
+              mb: 2,
             }}
           >
             {data.description}
           </Typography>
         )}
+        {data.topics && data.topics.length > 0 && (
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 2 }}>
+            {data.topics.map((topic, index) => (
+              <Chip
+                key={index}
+                label={topic}
+                size="small"
+                sx={{
+                  bgcolor: 'primary.main',
+                  color: 'white',
+                  '&:hover': {
+                    bgcolor: 'primary.dark',
+                  },
+                }}
+              />
+            ))}
+          </Box>
+        )}
+        {data.license_name && data.license_name !== 'None' && data.license_name !== 'null' && (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 2 }}>
+            <GavelIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
+            <Typography variant="body2" color="text.secondary">
+              License: {data.license_name}
+            </Typography>
+          </Box>
+        )}
       </Box>
 
-      <Grid container spacing={4} sx={{width: '100%'}}>
-        <Grid item xs={6} sm={4} md={2.4}>
+      <Grid container spacing={3} sx={{width: '100%'}}>
+        <Grid item xs={6} sm={4} md={2}>
           <Box
             sx={{
               p: 2,
@@ -131,7 +162,7 @@ export default function Overview({ data }) {
           </Box>
         </Grid>
         
-        <Grid item xs={6} sm={4} md={2.4}>
+        <Grid item xs={6} sm={4} md={2}>
           <Box
             sx={{
               p: 2,
@@ -163,7 +194,7 @@ export default function Overview({ data }) {
           </Box>
         </Grid>
         
-        <Grid item xs={6} sm={4} md={2.4}>
+        <Grid item xs={6} sm={4} md={2}>
           <Box
             sx={{
               p: 2,
@@ -195,7 +226,7 @@ export default function Overview({ data }) {
           </Box>
         </Grid>
         
-        <Grid item xs={6} sm={4} md={2.4}>
+        <Grid item xs={6} sm={4} md={2}>
           <Box
             sx={{
               p: 2,
@@ -211,26 +242,23 @@ export default function Overview({ data }) {
               },
             }}
           >
-            <CalendarTodayIcon 
+            <BugReportIcon 
               sx={{ 
                 fontSize: 32, 
-                color: 'primary.main',
+                color: 'error.main',
                 mb: 1,
               }} 
             />
             <Typography variant="h6" sx={{ fontWeight: 700 }}>
-              {new Date(data.created_at).toLocaleDateString('en-US', { 
-                month: 'short', 
-                year: 'numeric' 
-              })}
+              {(data.open_issues !== undefined && data.open_issues !== null) ? data.open_issues.toLocaleString() : 0}
             </Typography>
             <Typography variant="caption" color="text.secondary">
-              Created
+              Issues
             </Typography>
           </Box>
         </Grid>
         
-        <Grid item xs={6} sm={4} md={2.4}>
+        <Grid item xs={6} sm={4} md={2}>
           <Box
             sx={{
               p: 2,
@@ -246,7 +274,7 @@ export default function Overview({ data }) {
               },
             }}
           >
-            <UpdateIcon 
+            <VisibilityIcon 
               sx={{ 
                 fontSize: 32, 
                 color: 'secondary.main',
@@ -254,13 +282,44 @@ export default function Overview({ data }) {
               }} 
             />
             <Typography variant="h6" sx={{ fontWeight: 700 }}>
-              {new Date(data.updated_at).toLocaleDateString('en-US', { 
-                month: 'short', 
-                year: 'numeric' 
-              })}
+              {(data.watchers !== undefined && data.watchers !== null) ? data.watchers.toLocaleString() : 0}
             </Typography>
             <Typography variant="caption" color="text.secondary">
-              Updated
+              Watchers
+            </Typography>
+          </Box>
+        </Grid>
+        
+        <Grid item xs={6} sm={4} md={2}>
+          <Box
+            sx={{
+              p: 2,
+              borderRadius: 2,
+              bgcolor: 'background.paper',
+              border: '1px solid',
+              borderColor: 'divider',
+              textAlign: 'center',
+              transition: 'transform 0.2s, box-shadow 0.2s',
+              '&:hover': {
+                transform: 'translateY(-4px)',
+                boxShadow: 4,
+              },
+            }}
+          >
+            <StorageIcon 
+              sx={{ 
+                fontSize: 32, 
+                color: 'warning.main',
+                mb: 1,
+              }} 
+            />
+            <Typography variant="h6" sx={{ fontWeight: 700 }}>
+              {(data.size !== undefined && data.size !== null && data.size > 0) 
+                ? (data.size > 1024 ? `${(data.size / 1024).toFixed(1)} MB` : `${data.size} KB`) 
+                : 'N/A'}
+            </Typography>
+            <Typography variant="caption" color="text.secondary">
+              Size
             </Typography>
           </Box>
         </Grid>

@@ -4,7 +4,12 @@ from typing import Optional, Any
 import hashlib
 
 class SimpleCache:
-    def __init__(self, cache_dir: str = "backend/cache"):
+    def __init__(self, cache_dir: str = None):
+        if cache_dir is None:
+            # Default to cache directory relative to this file's location
+            import os
+            current_dir = Path(__file__).parent.parent  # Go up from services/ to backend/
+            cache_dir = str(current_dir / "cache")
         self.cache_dir = Path(cache_dir)
         self.cache_dir.mkdir(exist_ok=True, parents=True)
         

@@ -42,7 +42,12 @@ def analyze():
                 'forks': int(results['overview'].forks),
                 'created_at': results['overview'].created_at.isoformat(),
                 'updated_at': results['overview'].updated_at.isoformat(),
-                'language': results['overview'].language or 'unknown'
+                'language': results['overview'].language or 'unknown',
+                'open_issues': int(results['overview'].open_issues),
+                'watchers': int(results['overview'].watchers),
+                'size': int(results['overview'].size),
+                'license_name': results['overview'].license_name,
+                'topics': results['overview'].topics
             },
             'commit_stats': {
                 'total_commits': results['commit_stats'].total_commits,

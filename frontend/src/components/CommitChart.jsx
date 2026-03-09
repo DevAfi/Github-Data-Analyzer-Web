@@ -44,7 +44,7 @@ export default function CommitChart({ data }) {
     <Paper 
       elevation={3} 
       sx={{ 
-        p: { xs: 2, sm: 3 },
+        p: { xs: 2, sm: 3, md: 4 },
         height: '100%',
         width: '100%',
         borderRadius: 2,
@@ -60,7 +60,7 @@ export default function CommitChart({ data }) {
           mb: 2,
         }}
       >
-        📈 Commit Analysis
+        📈 Commit Stats
       </Typography>
       
       <Divider sx={{ mb: 3 }} />

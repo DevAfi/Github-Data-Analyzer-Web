@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from datetime import datetime
-from typing import List, Dict
+from typing import List, Dict, Optional
 
 @dataclass
 class RepoOverview:
@@ -12,6 +12,11 @@ class RepoOverview:
     created_at: datetime
     updated_at: datetime
     language: str
+    open_issues: int
+    watchers: int
+    size: int  # in KB
+    license_name: str
+    topics: List[str]
 
 @dataclass
 class Contributor:

@@ -29,7 +29,7 @@ export default function LanguageChart({ data }) {
           mb: 2,
         }}
       >
-        💻 Language Breakdown
+        💻 Languages
       </Typography>
       
       <Divider sx={{ mb: 3 }} />

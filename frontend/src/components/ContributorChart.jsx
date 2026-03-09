@@ -47,7 +47,7 @@ export default function ContributorChart({ data }) {
           series={[{ 
             data: chartData.series, 
             label: 'Contributions',
-            color: '#1976d2',
+            color: '#f97316',
           }]}
           height={350}
           width={undefined}

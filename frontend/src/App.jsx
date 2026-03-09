@@ -114,7 +114,7 @@ function App() {
     <ThemeProvider theme={theme}>
       <Box sx={{
         minHeight: '100vh',
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)',
+        background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 50%, #1e293b 100%)',
       }}
       >
 

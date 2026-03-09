@@ -4,14 +4,19 @@ export const theme = createTheme({
   palette: {
     mode: 'dark',
     primary: {
-      main: '#3b82f6', // Blue
-      light: '#60a5fa',
-      dark: '#2563eb',
+      main: '#f97316', // Warm orange
+      light: '#fb923c',
+      dark: '#ea580c',
     },
     secondary: {
-      main: '#8b5cf6', // Purple
-      light: '#a78bfa',
-      dark: '#7c3aed',
+      main: '#14b8a6', // Teal
+      light: '#5eead4',
+      dark: '#0d9488',
+    },
+    info: {
+      main: '#06b6d4', // Cyan (softer than blue)
+      light: '#22d3ee',
+      dark: '#0891b2',
     },
     background: {
       default: '#0f172a', // Dark slate

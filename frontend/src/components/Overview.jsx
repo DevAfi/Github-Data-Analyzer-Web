@@ -19,8 +19,8 @@ export default function Overview({ data }) {
         mx: 'auto',
         background: (theme) => 
           theme.palette.mode === 'dark' 
-            ? 'linear-gradient(135deg, rgba(25, 118, 210, 0.1) 0%, rgba(25, 118, 210, 0.05) 100%)'
-            : 'linear-gradient(135deg, rgba(25, 118, 210, 0.05) 0%, rgba(25, 118, 210, 0.02) 100%)',
+            ? 'linear-gradient(135deg, rgba(249, 115, 22, 0.1) 0%, rgba(249, 115, 22, 0.05) 100%)'
+            : 'linear-gradient(135deg, rgba(249, 115, 22, 0.05) 0%, rgba(249, 115, 22, 0.02) 100%)',
       }}
     >
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 1, justifyContent: 'space-between' }}>
@@ -45,7 +45,7 @@ export default function Overview({ data }) {
           sx={{ 
             fontWeight: 700,
             mb: 0,
-            background: 'linear-gradient(45deg, #1976d2 30%, #42a5f5 90%)',
+            background: 'linear-gradient(45deg, #f97316 30%, #fb923c 90%)',
             backgroundClip: 'text',
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',

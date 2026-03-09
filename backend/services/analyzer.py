@@ -1,7 +1,7 @@
 from services.github_api import GitHubAPI
-from services.models import RepoOverview, Contributor, CommitStats, HealthScore
+from services.models import RepoOverview, Contributor, CommitStats, HealthScore, RecentCommit, ReleaseInfo
 from services.cache import SimpleCache
-from typing import List, Dict, Tuple
+from typing import List, Dict, Tuple, Optional
 from datetime import datetime, timezone
 
 class GitHubAnalyzer:
@@ -56,6 +56,11 @@ class GitHubAnalyzer:
             watchers = 0
             size = 0
         
+        # Get additional fields
+        default_branch = repo_data.get('default_branch', 'main')
+        open_pulls = 0  # Will be set later when we fetch PRs
+        branch_count = 0  # Will be set later when we fetch branches
+        
         # Debug logging - DO NOT DELETE
         print(f"🔍 Extracted Repo Data:")
         print(f"   - open_issues: {open_issues} (from API: {repo_data.get('open_issues')})")
@@ -63,6 +68,7 @@ class GitHubAnalyzer:
         print(f"   - size: {size} KB (from API: {repo_data.get('size')})")
         print(f"   - topics: {len(topics)} topics")
         print(f"   - license: {license_name}")
+        print(f"   - default_branch: {default_branch}")
         
         return RepoOverview(
             name=repo_data.get('name', 'Unknown'),
@@ -77,7 +83,10 @@ class GitHubAnalyzer:
             watchers=int(watchers) if watchers else 0,
             size=int(size) if size else 0,
             license_name=license_name or 'None',
-            topics=topics if isinstance(topics, list) else []
+            topics=topics if isinstance(topics, list) else [],
+            open_pulls=open_pulls,  # Will be updated
+            default_branch=default_branch,
+            branch_count=branch_count  # Will be updated
         )
 
 
@@ -181,6 +190,74 @@ class GitHubAnalyzer:
             print(f"Warning: Error processing languages: {e}")
             return {}
 
+    def _process_recent_commits(self, commits: List[Dict], limit: int = 10) -> List[RecentCommit]:
+        """Process recent commits into a list of RecentCommit objects."""
+        if not commits or not isinstance(commits, list):
+            return []
+        
+        recent_commits = []
+        for commit in commits[:limit]:
+            if not isinstance(commit, dict):
+                continue
+            try:
+                commit_info = commit.get('commit', {})
+                if not isinstance(commit_info, dict):
+                    continue
+                
+                author_info = commit_info.get('author', {})
+                if not isinstance(author_info, dict):
+                    continue
+                
+                sha = commit.get('sha', '')[:7]  # Short SHA
+                message = commit_info.get('message', 'No message')
+                # Get first line of message (subject)
+                message = message.split('\n')[0][:100]  # Limit length
+                author = author_info.get('name', 'Unknown')
+                date_str = author_info.get('date')
+                url = commit.get('html_url', '')
+                
+                if date_str:
+                    commit_date = datetime.fromisoformat(date_str.replace('Z', '+00:00'))
+                    recent_commits.append(RecentCommit(
+                        sha=sha,
+                        message=message,
+                        author=author,
+                        date=commit_date,
+                        url=url
+                    ))
+            except (KeyError, ValueError, AttributeError) as e:
+                print(f"Warning: Skipping invalid commit data: {e}")
+                continue
+        
+        return recent_commits
+
+    def _process_release(self, release_data: Optional[Dict]) -> Optional[ReleaseInfo]:
+        """Process release data into ReleaseInfo object."""
+        if not release_data or not isinstance(release_data, dict):
+            return None
+        
+        try:
+            tag_name = release_data.get('tag_name', '')
+            name = release_data.get('name', tag_name)
+            published_at_str = release_data.get('published_at')
+            url = release_data.get('html_url', '')
+            prerelease = release_data.get('prerelease', False)
+            
+            published_at = None
+            if published_at_str:
+                published_at = datetime.fromisoformat(published_at_str.replace('Z', '+00:00'))
+            
+            return ReleaseInfo(
+                tag_name=tag_name,
+                name=name,
+                published_at=published_at or datetime.now(timezone.utc),
+                url=url,
+                prerelease=prerelease
+            )
+        except (KeyError, ValueError, AttributeError) as e:
+            print(f"Warning: Error processing release data: {e}")
+            return None
+
 
     def _calculate_health_score(self, repo_data: Dict, commits: List[Dict], contributors: List[Dict]) -> HealthScore:
         
@@ -250,7 +327,7 @@ class GitHubAnalyzer:
     
     def analyze_repository(self, owner: str, repo: str) -> Dict:
         """Main method - analyzes a repository and returns all insights."""
-        print(f"🔍 Analyzing {owner}/{repo}...")
+        print(f"Analyzing {owner}/{repo}...")
 
         
         # Fetch all data
@@ -258,6 +335,11 @@ class GitHubAnalyzer:
         commits = self.api.get_commits(owner, repo, per_page=100)
         contributors = self.api.get_contributors(owner, repo)
         languages = self.api.get_languages(owner, repo)
+        
+        # Fetch new data
+        pull_requests = self.api.get_pull_requests(owner, repo, state='open', per_page=100)
+        branches = self.api.get_branches(owner, repo)
+        latest_release = self.api.get_latest_release(owner, repo)
         
         # Validate data types
         if not isinstance(repo_data, dict):
@@ -271,6 +353,12 @@ class GitHubAnalyzer:
         if not isinstance(languages, dict):
             print(f"Warning: languages is not a dict, got {type(languages).__name__}, converting to empty dict")
             languages = {}
+        if not isinstance(pull_requests, list):
+            print(f"Warning: pull_requests is not a list, got {type(pull_requests).__name__}, converting to empty list")
+            pull_requests = []
+        if not isinstance(branches, list):
+            print(f"Warning: branches is not a list, got {type(branches).__name__}, converting to empty list")
+            branches = []
         
         # Calculate total commits safely
         if contributors and isinstance(contributors, list) and len(contributors) > 0:
@@ -287,16 +375,39 @@ class GitHubAnalyzer:
 
         # Process data
         overview = self._process_repo_overview(repo_data)
+        
+        # Update overview with PR and branch counts
+        if isinstance(pull_requests, list):
+            overview.open_pulls = len(pull_requests)
+            print(f"Found {len(pull_requests)} open pull requests")
+        else:
+            print(f"Warning: pull_requests is not a list, got {type(pull_requests).__name__}")
+            overview.open_pulls = 0
+            
+        if isinstance(branches, list):
+            overview.branch_count = len(branches)
+            print(f"Found {len(branches)} branches")
+        else:
+            print(f"Warning: branches is not a list, got {type(branches).__name__}")
+            overview.branch_count = 0
+        
+        print(f"Final overview - PRs: {overview.open_pulls}, Branches: {overview.branch_count}, Default branch: {overview.default_branch}")
+        
         commit_stats = self._process_commits(commits, actual_total_commits)
-
         top_contributors = self._process_contributors(contributors)
         language_breakdown = self._process_languages(languages)
         health = self._calculate_health_score(repo_data, commits, contributors)
+        
+        # Process new data
+        recent_commits = self._process_recent_commits(commits, limit=10)
+        release_info = self._process_release(latest_release)
         
         return {
             'overview': overview,
             'commit_stats': commit_stats,
             'contributors': top_contributors,
             'languages': language_breakdown,
-            'health': health
+            'health': health,
+            'recent_commits': recent_commits,
+            'release': release_info
         }

@@ -9,10 +9,23 @@ import BugReportIcon from '@mui/icons-material/BugReport';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import StorageIcon from '@mui/icons-material/Storage';
 import GavelIcon from '@mui/icons-material/Gavel';
+//import PullRequestIcon from '@mui/icons-material/PullRequest';
+//import AccountTreeIcon from '@mui/icons-material/AccountTree';
+import WarningIcon from '@mui/icons-material/Warning';
 
 
 export default function Overview({ data }) {
-  const repoLink = `https://github.com/${data.full_name}`
+  const repoLink = `https://github.com/${data?.full_name || 'unknown/unknown'}`
+  
+  // Debug logging
+  if (data) {
+    console.log('Overview data:', {
+      open_pulls: data.open_pulls,
+      branch_count: data.branch_count,
+      default_branch: data.default_branch
+    });
+  }
+  
   return (
     <Paper 
       elevation={3} 
@@ -83,12 +96,12 @@ export default function Overview({ data }) {
       
       <Box sx={{ mb: 4 }}>
         <Typography variant="h5" sx={{ fontWeight: 600, mb: 0.5 }}>
-          {data.name}
+          {data?.name || 'Unknown'}
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-          {data.full_name}
+          {data?.full_name || 'Unknown/Unknown'}
         </Typography>
-        {data.description && (
+        {data?.description && (
           <Typography 
             variant="body1" 
             sx={{ 
@@ -101,7 +114,7 @@ export default function Overview({ data }) {
             {data.description}
           </Typography>
         )}
-        {data.topics && data.topics.length > 0 && (
+        {data?.topics && data.topics.length > 0 && (
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 2 }}>
             {data.topics.map((topic, index) => (
               <Chip
@@ -119,7 +132,7 @@ export default function Overview({ data }) {
             ))}
           </Box>
         )}
-        {data.license_name && data.license_name !== 'None' && data.license_name !== 'null' && (
+        {data?.license_name && data.license_name !== 'None' && data.license_name !== 'null' && (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 2 }}>
             <GavelIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
             <Typography variant="body2" color="text.secondary">
@@ -154,7 +167,7 @@ export default function Overview({ data }) {
               }} 
             />
             <Typography variant="h6" sx={{ fontWeight: 700 }}>
-              {data.stars.toLocaleString()}
+              {(data?.stars ?? 0).toLocaleString()}
             </Typography>
             <Typography variant="caption" color="text.secondary">
               Stars
@@ -186,7 +199,7 @@ export default function Overview({ data }) {
               }} 
             />
             <Typography variant="h6" sx={{ fontWeight: 700 }}>
-              {data.forks.toLocaleString()}
+              {(data?.forks ?? 0).toLocaleString()}
             </Typography>
             <Typography variant="caption" color="text.secondary">
               Forks
@@ -218,7 +231,7 @@ export default function Overview({ data }) {
               }} 
             />
             <Typography variant="h6" sx={{ fontWeight: 700 }}>
-              {data.language || 'N/A'}
+              {data?.language || 'N/A'}
             </Typography>
             <Typography variant="caption" color="text.secondary">
               Language
@@ -250,7 +263,7 @@ export default function Overview({ data }) {
               }} 
             />
             <Typography variant="h6" sx={{ fontWeight: 700 }}>
-              {(data.open_issues !== undefined && data.open_issues !== null) ? data.open_issues.toLocaleString() : 0}
+              {(data?.open_issues ?? 0).toLocaleString()}
             </Typography>
             <Typography variant="caption" color="text.secondary">
               Issues
@@ -282,7 +295,7 @@ export default function Overview({ data }) {
               }} 
             />
             <Typography variant="h6" sx={{ fontWeight: 700 }}>
-              {(data.watchers !== undefined && data.watchers !== null) ? data.watchers.toLocaleString() : 0}
+              {(data?.watchers ?? 0).toLocaleString()}
             </Typography>
             <Typography variant="caption" color="text.secondary">
               Watchers
@@ -314,7 +327,7 @@ export default function Overview({ data }) {
               }} 
             />
             <Typography variant="h6" sx={{ fontWeight: 700 }}>
-              {(data.size !== undefined && data.size !== null && data.size > 0) 
+              {data?.size && data.size > 0
                 ? (data.size > 1024 ? `${(data.size / 1024).toFixed(1)} MB` : `${data.size} KB`) 
                 : 'N/A'}
             </Typography>
@@ -323,7 +336,80 @@ export default function Overview({ data }) {
             </Typography>
           </Box>
         </Grid>
+        
+        <Grid item xs={6} sm={4} md={2}>
+          <Box
+            sx={{
+              p: 2,
+              borderRadius: 2,
+              bgcolor: 'background.paper',
+              border: '1px solid',
+              borderColor: 'divider',
+              textAlign: 'center',
+              transition: 'transform 0.2s, box-shadow 0.2s',
+              '&:hover': {
+                transform: 'translateY(-4px)',
+                boxShadow: 4,
+              },
+            }}
+          >
+            <WarningIcon 
+              sx={{ 
+                fontSize: 32, 
+                color: 'secondary.main',
+                mb: 1,
+              }} 
+            />
+            <Typography variant="h6" sx={{ fontWeight: 700 }}>
+              {(data?.open_pulls ?? 0).toLocaleString()}
+            </Typography>
+            <Typography variant="caption" color="text.secondary">
+              Pull Requests
+            </Typography>
+          </Box>
+        </Grid>
+        
+        <Grid item xs={6} sm={4} md={2}>
+          <Box
+            sx={{
+              p: 2,
+              borderRadius: 2,
+              bgcolor: 'background.paper',
+              border: '1px solid',
+              borderColor: 'divider',
+              textAlign: 'center',
+              transition: 'transform 0.2s, box-shadow 0.2s',
+              '&:hover': {
+                transform: 'translateY(-4px)',
+                boxShadow: 4,
+              },
+            }}
+          >
+            <WarningIcon 
+              sx={{ 
+                fontSize: 32, 
+                color: 'info.main',
+                mb: 1,
+              }} 
+            />
+            <Typography variant="h6" sx={{ fontWeight: 700 }}>
+              {(data?.branch_count ?? 0).toLocaleString()}
+            </Typography>
+            <Typography variant="caption" color="text.secondary">
+              Branches
+            </Typography>
+          </Box>
+        </Grid>
       </Grid>
+      
+      {data?.default_branch && (
+        <Box sx={{ mt: 3, display: 'flex', alignItems: 'center', gap: 1 }}>
+          <WarningIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
+          <Typography variant="body2" color="text.secondary">
+            Default branch: <strong>{data.default_branch}</strong>
+          </Typography>
+        </Box>
+      )}
     </Paper>
   );
 }

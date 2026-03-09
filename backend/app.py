@@ -31,6 +31,7 @@ def analyze():
         print(f"Successfully analyzed {owner}/{repo}")
         print("Type of languages:", type(results['languages']))
         print("Languages data:", results['languages'])
+        print(f"PRs: {results['overview'].open_pulls}, Branches: {results['overview'].branch_count}, Default branch: {results['overview'].default_branch}")
 
 
         response = {
@@ -47,7 +48,10 @@ def analyze():
                 'watchers': int(results['overview'].watchers),
                 'size': int(results['overview'].size),
                 'license_name': results['overview'].license_name,
-                'topics': results['overview'].topics
+                'topics': results['overview'].topics,
+                'open_pulls': int(results['overview'].open_pulls),
+                'default_branch': results['overview'].default_branch,
+                'branch_count': int(results['overview'].branch_count)
             },
             'commit_stats': {
                 'total_commits': results['commit_stats'].total_commits,
@@ -70,7 +74,24 @@ def analyze():
                 'documentation_score': results['health'].documentation_score,
                 'overall_score': results['health'].overall_score,
                 'rating': results['health'].rating
-            }
+            },
+            'recent_commits': [
+                {
+                    'sha': c.sha,
+                    'message': c.message,
+                    'author': c.author,
+                    'date': c.date.isoformat(),
+                    'url': c.url
+                }
+                for c in results.get('recent_commits', [])
+            ],
+            'release': {
+                'tag_name': results['release'].tag_name,
+                'name': results['release'].name,
+                'published_at': results['release'].published_at.isoformat(),
+                'url': results['release'].url,
+                'prerelease': results['release'].prerelease
+            } if results.get('release') and results['release'] is not None else None
         }
         
         return jsonify(response), 200

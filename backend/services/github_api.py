@@ -96,3 +96,70 @@ class GitHubAPI:
 
     def get_rate_limit(self) -> Dict[str, Any]:
         return self._make_request("/rate_limit")
+    
+    def get_pull_requests(self, owner: str, repo: str, state: str = 'open', per_page: int = 100) -> List[Dict[str, Any]]:
+        """Get all pull requests (paginated)"""
+        all_prs = []
+        page = 1
+        
+        while True:
+            params = {"state": state, "per_page": per_page, "page": page}
+            endpoint = f"/repos/{owner}/{repo}/pulls"
+            page_prs = self._make_request(endpoint, params=params)
+            
+            if not isinstance(page_prs, list):
+                print(f"Warning: get_pull_requests returned {type(page_prs).__name__}, expected list")
+                break
+            
+            if len(page_prs) == 0:
+                break
+            
+            all_prs.extend(page_prs)
+            
+            # Check if there are more pages (if we got less than per_page, we're done)
+            if len(page_prs) < per_page:
+                break
+            
+            page += 1
+        
+        return all_prs
+    
+    def get_branches(self, owner: str, repo: str) -> List[Dict[str, Any]]:
+        """Get all branches (paginated)"""
+        all_branches = []
+        page = 1
+        per_page = 100
+        
+        while True:
+            params = {"per_page": per_page, "page": page}
+            endpoint = f"/repos/{owner}/{repo}/branches"
+            page_branches = self._make_request(endpoint, params=params)
+            
+            if not isinstance(page_branches, list):
+                print(f"Warning: get_branches returned {type(page_branches).__name__}, expected list")
+                break
+            
+            if len(page_branches) == 0:
+                break
+            
+            all_branches.extend(page_branches)
+            
+            # Check if there are more pages (if we got less than per_page, we're done)
+            if len(page_branches) < per_page:
+                break
+            
+            page += 1
+        
+        return all_branches
+    
+    def get_latest_release(self, owner: str, repo: str) -> Optional[Dict[str, Any]]:
+        """Get latest release"""
+        try:
+            data = self._make_request(f"/repos/{owner}/{repo}/releases/latest")
+            if isinstance(data, dict):
+                return data
+            return None
+        except Exception as e:
+            # No releases found returns 404, which is fine
+            print(f"No releases found for {owner}/{repo}: {e}")
+            return None

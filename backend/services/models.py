@@ -17,6 +17,9 @@ class RepoOverview:
     size: int  # in KB
     license_name: str
     topics: List[str]
+    open_pulls: int
+    default_branch: str
+    branch_count: int
 
 @dataclass
 class Contributor:
@@ -38,3 +41,19 @@ class HealthScore:
     documentation_score: float # 0-100
     overall_score: float # 0-100
     rating: str
+
+@dataclass
+class RecentCommit:
+    sha: str
+    message: str
+    author: str
+    date: datetime
+    url: str
+
+@dataclass
+class ReleaseInfo:
+    tag_name: str
+    name: str
+    published_at: datetime
+    url: str
+    prerelease: bool

@@ -7,15 +7,22 @@ A comprehensive, full-stack web application for analyzing GitHub repositories wi
 🔍 **Repository Analysis** - Deep insights into any public GitHub repository  
 📊 **Health Score Calculation** - Multi-factor repository health assessment (activity, contributors, documentation)  
 📈 **Commit Statistics** - Total commits, commits per day, most active day/hour analysis  
+📅 **Commit Activity Heatmap** - GitHub-style contribution graph showing commit activity over the last year  
+📝 **Recent Commits** - List of the last 10 commits with authors, messages, and dates  
 👥 **Contributor Analytics** - Top contributors with contribution percentages and visualizations  
 💻 **Language Distribution** - Percentage breakdown of programming languages used  
-🎨 **Beautiful UI** - Modern Material-UI design with smooth animations and responsive layout  
+🔀 **Pull Request Tracking** - Count of open pull requests  
+🌿 **Branch Information** - Default branch name and total branch count  
+🏷️ **Release Information** - Latest release version, date, and pre-release status  
+📌 **Repository Topics** - Display of repository tags/topics  
+⚖️ **License Information** - Repository license display  
+🎨 **Beautiful UI** - Modern Material-UI design with warm orange/teal color scheme and smooth animations  
 💾 **Smart Caching** - Local pickle-based caching to reduce API calls and improve performance  
 🔐 **GitHub API Integration** - Secure token-based authentication with rate limit handling  
 📱 **Responsive Design** - Works seamlessly on desktop, tablet, and mobile devices  
 🔗 **URL Sharing** - Shareable repository analysis links via URL parameters  
 📝 **Recent Searches** - Local storage of recently analyzed repositories for quick access  
-⚡ **Fast Performance** - Optimized API calls with intelligent caching system  
+⚡ **Fast Performance** - Optimized API calls with intelligent caching and pagination  
 
 This repo includes a complete full-stack application with a Flask REST API backend and a React frontend, providing production-ready GitHub repository analysis capabilities.
 
@@ -60,7 +67,7 @@ Github-Data-Analyzer-Web/
     services/
       analyzer.py             # Core repository analysis logic and health scoring
       github_api.py           # GitHub API client with caching and error handling
-      models.py               # Data models (RepoOverview, Contributor, CommitStats, HealthScore)
+      models.py               # Data models (RepoOverview, Contributor, CommitStats, HealthScore, RecentCommit, ReleaseInfo, HeatmapDay)
       cache.py                # Pickle-based caching system for API responses
       config.py               # Environment configuration and GitHub token management
     cache/                    # Cache directory for stored API responses (.pkl files)
@@ -77,11 +84,14 @@ Github-Data-Analyzer-Web/
         Results.jsx           # Results page with all visualizations
       components/
         Hero.jsx              # Hero section with search form
-        Overview.jsx          # Repository overview card
+        Overview.jsx          # Repository overview card with stats (stars, forks, issues, watchers, PRs, branches, etc.)
         HealthScore.jsx        # Health score visualization with progress bars
         CommitChart.jsx       # Commit statistics chart
         ContributorChart.jsx  # Contributor distribution chart
         LanguageChart.jsx     # Language distribution pie chart
+        CommitHeatmap.jsx     # GitHub-style commit activity heatmap (last 365 days)
+        RecentCommits.jsx     # List of recent commits with messages and authors
+        ReleaseInfo.jsx       # Latest release information display
         RecentSearches.jsx    # Recent searches component
         LoadingSkeleton.jsx   # Loading state skeleton
       services/
@@ -187,9 +197,12 @@ The production build will be in the `frontend/dist/` directory.
 2. Enter a GitHub repository owner (e.g., `facebook`) and repository name (e.g., `react`)
 3. Click "Analyze" to get comprehensive insights
 4. View detailed visualizations including:
-   - Repository overview (stars, forks, description, dates)
+   - Repository overview (stars, forks, issues, watchers, PRs, branches, size, license, topics)
    - Health score breakdown (activity, contributors, documentation)
    - Commit statistics and activity patterns
+   - Commit activity heatmap (GitHub-style contribution graph)
+   - Recent commits list with messages and authors
+   - Latest release information
    - Contributor distribution charts
    - Language distribution pie chart
 
@@ -213,11 +226,14 @@ Content-Type: application/json
 ```
 
 Returns comprehensive repository analysis including:
-- `overview`: Repository metadata
+- `overview`: Repository metadata (stars, forks, issues, watchers, PRs, branches, size, license, topics, default branch)
 - `commit_stats`: Commit statistics and patterns
 - `contributors`: Top contributors with percentages
 - `languages`: Language distribution percentages
 - `health`: Multi-factor health score
+- `recent_commits`: List of recent commits (last 10)
+- `release`: Latest release information (tag, name, date, URL)
+- `heatmap`: Commit activity heatmap data (365 days)
 
 ### URL Sharing
 You can share repository analysis links:
@@ -266,6 +282,22 @@ The health score is calculated using three weighted factors:
 - **Quick Access**: Click on recent searches to quickly re-analyze repositories
 - **Persistent**: Searches persist across browser sessions
 
+### Commit Activity Heatmap
+- **365-Day View**: Visual representation of commit activity over the last year
+- **Intensity Levels**: Color-coded cells showing commit frequency (0-4 levels)
+- **Interactive Tooltips**: Hover over cells to see exact commit count and date
+- **GitHub-Style Design**: Familiar contribution graph layout
+- **Responsive**: Automatically fills container width while maintaining square cells
+
+### Additional Repository Metrics
+- **Pull Requests**: Count of open pull requests
+- **Branch Information**: Default branch name and total branch count
+- **Recent Commits**: Last 10 commits with full messages, authors, and relative dates
+- **Release Information**: Latest release tag, name, publication date, and pre-release status
+- **Repository Topics**: Display of all repository tags/topics as chips
+- **License Display**: Clear license information
+- **Repository Size**: Size in KB
+
 ## Configuration Files
 
 - **`.env`** (backend): Environment variables for GitHub token, CORS origins, and port
@@ -302,21 +334,27 @@ web: gunicorn app:app
 
 ## Roadmap (Future Enhancements)
 
-### Phase 2: Advanced Features 🔄
-- Repository comparison (side-by-side analysis)
-- Historical trend analysis (commit activity over time)
-- Pull request statistics and merge patterns
-- Issue tracking and resolution metrics
-- Branch analysis and protection status
-- Release history and version tracking
+### Phase 2: Advanced Features ✅
+- ✅ Pull request statistics (open PRs count)
+- ✅ Branch analysis (default branch, branch count)
+- ✅ Release information (latest release tracking)
+- ✅ Recent commits list (last 10 commits)
+- ✅ Commit activity heatmap (365-day GitHub-style graph)
+- 🔄 Repository comparison (side-by-side analysis)
+- 🔄 Historical trend analysis (commit activity over time)
+- 🔄 Pull request merge patterns and statistics
+- 🔄 Issue tracking and resolution metrics
+- 🔄 Branch protection status
+- 🔄 Full release history and version tracking
 
 ### Phase 3: Enhanced Analytics 🔄
-- Contributor activity heatmaps
-- Code review statistics
-- Dependency analysis
-- Security vulnerability scanning
-- Performance metrics (CI/CD status)
-- Community engagement metrics
+- 🔄 Contributor activity heatmaps (per-contributor)
+- 🔄 Code review statistics
+- 🔄 Dependency analysis
+- 🔄 Security vulnerability scanning
+- 🔄 Performance metrics (CI/CD status)
+- 🔄 Community engagement metrics
+- 🔄 Issue labels and categorization
 
 ### Phase 4: Polish & Testing 🔄
 - Comprehensive unit tests and integration tests

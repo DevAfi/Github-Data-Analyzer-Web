@@ -1,4 +1,4 @@
-import { Paper, Typography, Divider, Box, List, ListItem, ListItemText, Link, Chip } from '@mui/material';
+import { Paper, Typography, Divider, Box, Grid, Link, Chip } from '@mui/material';
 import CommitIcon from '@mui/icons-material/Commit';
 import PersonIcon from '@mui/icons-material/Person';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
@@ -50,88 +50,93 @@ export default function RecentCommits({ commits }) {
       
       <Divider sx={{ mb: 3 }} />
       
-      <List sx={{ flexGrow: 1, p: 0 }}>
+      <Grid container spacing={2} sx={{ flexGrow: 1 }}>
         {commits.slice(0, 10).map((commit, index) => (
-          <ListItem
-            key={commit?.sha || index}
-            sx={{
-              mb: 2,
-              p: 2,
-              borderRadius: 2,
-              bgcolor: 'background.default',
-              border: '1px solid',
-              borderColor: 'divider',
-              flexDirection: 'column',
-              alignItems: 'flex-start',
-              '&:hover': {
-                bgcolor: 'background.paper',
-                transform: 'translateX(4px)',
-                transition: 'all 0.2s',
-              },
-            }}
-          >
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1, width: '100%' }}>
-              <CommitIcon sx={{ fontSize: 20, color: 'primary.main' }} />
-              {commit?.url ? (
-                <Link
-                  href={commit.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  sx={{
-                    color: 'primary.main',
-                    textDecoration: 'none',
-                    fontWeight: 600,
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 0.5,
-                    '&:hover': {
-                      textDecoration: 'underline',
-                    },
-                  }}
-                >
-                  {commit?.sha || 'N/A'}
-                  <OpenInNewIcon sx={{ fontSize: 14 }} />
-                </Link>
-              ) : (
-                <Typography variant="body2" sx={{ fontWeight: 600, color: 'primary.main' }}>
-                  {commit?.sha || 'N/A'}
-                </Typography>
-              )}
-              {commit?.date && (
-                <Chip
-                  label={formatDate(commit.date)}
-                  size="small"
-                  sx={{
-                    ml: 'auto',
-                    height: 20,
-                    fontSize: '0.7rem',
-                  }}
-                />
-              )}
-            </Box>
-            
-            <Typography 
-              variant="body1" 
-              sx={{ 
-                mb: 1,
-                fontWeight: 500,
-                color: 'text.primary',
+          <Grid item xs={12} sm={6} key={commit?.sha || index}>
+            <Box
+              sx={{
+                p: 2,
+                borderRadius: 2,
+                bgcolor: 'background.default',
+                border: '1px solid',
+                borderColor: 'divider',
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                '&:hover': {
+                  bgcolor: 'background.paper',
+                  transform: 'translateY(-2px)',
+                  boxShadow: 2,
+                  transition: 'all 0.2s',
+                },
               }}
             >
-              {commit?.message || 'No message'}
-            </Typography>
-            
-            {commit?.author && (
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                <PersonIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
-                <Typography variant="body2" color="text.secondary">
-                  {commit.author}
-                </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1, width: '100%' }}>
+                <CommitIcon sx={{ fontSize: 20, color: 'primary.main' }} />
+                {commit?.url ? (
+                  <Link
+                    href={commit.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    sx={{
+                      color: 'primary.main',
+                      textDecoration: 'none',
+                      fontWeight: 600,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 0.5,
+                      fontSize: '0.875rem',
+                      '&:hover': {
+                        textDecoration: 'underline',
+                      },
+                    }}
+                  >
+                    {commit?.sha || 'N/A'}
+                    <OpenInNewIcon sx={{ fontSize: 14 }} />
+                  </Link>
+                ) : (
+                  <Typography variant="body2" sx={{ fontWeight: 600, color: 'primary.main', fontSize: '0.875rem' }}>
+                    {commit?.sha || 'N/A'}
+                  </Typography>
+                )}
+                {commit?.date && (
+                  <Chip
+                    label={formatDate(commit.date)}
+                    size="small"
+                    sx={{
+                      ml: 'auto',
+                      height: 20,
+                      fontSize: '0.7rem',
+                    }}
+                  />
+                )}
               </Box>
-            )}
-          </ListItem>
+              
+              <Typography 
+                variant="body2" 
+                sx={{ 
+                  mb: 1,
+                  fontWeight: 500,
+                  color: 'text.primary',
+                  flexGrow: 1,
+                  lineHeight: 1.4,
+                }}
+              >
+                {commit?.message || 'No message'}
+              </Typography>
+              
+              {commit?.author && (
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 'auto' }}>
+                  <PersonIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
+                  <Typography variant="caption" color="text.secondary">
+                    {commit.author}
+                  </Typography>
+                </Box>
+              )}
+            </Box>
+          </Grid>
         ))}
-      </List>
+      </Grid>
     </Paper>
   );
 }
